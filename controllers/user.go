@@ -1,10 +1,11 @@
 package controllers
 
-import "gopkg.in/mgo.v2"
+import (
+	"gopkg.in/mgo.v2"
+	"github.com/robinskumar73/byte/models"
+)
 
 type (
-
-
 	//Inherit controller interface..
 	//Define the user controller
 	UserController struct {
@@ -12,12 +13,12 @@ type (
 		//Each controller will inherit a Connection struct..
 		Controller
 	}
-
-
 )
 
 
-func (u *UserController)getUserById(id string) ()
+func (u *UserController)getUserById(id string) (*models.User, error) {
+
+}
 
 
 

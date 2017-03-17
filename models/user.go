@@ -4,20 +4,25 @@ type (
 	//User implements ModelProvider interface
 	//User inherit Model
 	User struct {
-		Model
-		Id string
-		Created string
-		Updated string
-		Type string
+		//Inherit functions from base controller
+		BaseModel
 		Password string
 		Username string
+		FirstName string
+		LastName string
 		Name string
 	}
 )
 
+func init()  {
+	//Create an user model and save to database..
+	//user := &User{}
+}
+
+/*
 
 //Get the User model
-func(u *User) getUser() (*User, error){
+func(u *User) get() (*User, error){
 	return u, nil
 }
 
@@ -28,10 +33,12 @@ func (u *User) save() (error){
 	return nil
 }
 
+
 //Delete data from database..
 func (u *User) destroy() error  {
 	//TODO: Delete user from database..
-		
+
 	return nil
 }
+*/
 

@@ -4,12 +4,17 @@ import (
 	"gopkg.in/mgo.v2"
 	"time"
 	"github.com/SnaphyLabs/SnaphyByte/controllers"
+	"github.com/rs/rest-layer/resource"
 )
 
 //All Database Session will inherit this interface
 type DbSession interface {
 	//Will create a new session
 	Copy() *DbSession
+	Find(lookup , offset, limit int)
+	Update(item *resource.Item, original *resource.Item) error
+	Delete(item *resource.Item) error
+	Clear(lookup *resource.Lookup) (int, error)
 }
 
 
