@@ -18,6 +18,8 @@ type (
 )
 
 
+
+//Will generate a new session for concurrent query.
 func (ctrl *Controller) NewSession() (*database.DbSession, error) {
 	//Get the interface method
 	session := database.DbSession(ctrl.dbSession)

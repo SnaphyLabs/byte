@@ -6,7 +6,17 @@ import (
 )
 
 type (
+
+	UserInterface interface {
+		login() *error
+		register() *error
+		isLogin() *error
+		//Add more login user data here
+		//TODO: Add more user and define it.
+	}
+
 	//User implements ModelProvider interface
+	//User implements UserInterface
 	//User inherit Model
 	User struct {
 		//Inherit functions from base controller
@@ -19,7 +29,7 @@ type (
 )
 
 //Test collection type..
-const COLLECTION_TYPE  = "Test_Snaphy_Byte"
+const COLLECTION_TYPE  = "TestSnaphyByte"
 
 func init()  {
 	//Create an user model and save to database..
@@ -49,3 +59,4 @@ func init()  {
 	fmt.Println(string(r))
 
 }
+

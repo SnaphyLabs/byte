@@ -7,6 +7,7 @@ import (
 	"github.com/rs/rest-layer/resource"
 )
 
+
 //All Database Session will inherit this interface
 type DbSession interface {
 	//Will create a new session
@@ -19,36 +20,43 @@ type DbSession interface {
 
 
 type Storage interface {
-	GetSession() *interface{}
+	GetSession() *DbSession
 	//Each controller must inherit ConnectionProvider interface.
-	NewController() *controllers.ControllerProvider
+	NewController(c controllers.ControllerProvider) error
 }
+
+
 
 //MongoStorage implements interface Storage
 //MongoStorage implements interface DbSession
-type MongoStorage struct {
+type DataStorage struct {
 	Address []string
 	Timeout time.Duration
 	Database string
 	Username string
 	Password string
-	Session *mgo.Session
-}
-
-
-func (ms *MongoStorage)Copy() *mgo.Session {
-	return ms.Session.Copy()
+	Session *DbSession
 }
 
 
 
-func (ms *MongoStorage)NewController() *controllers.ControllerProvider   {
-	
+func (ms *DataStorage)Copy() *DbSession {
+	session := DbSession(ms.Session)
+	return session.Copy()
 }
+
+
+//Generate a new controller
+func (ms *DataStorage)NewController(c controllers.ControllerProvider) error   {
+	session := ms.Connect()
+	c["dbSession"] = session
+	return nil
+}
+
 
 //Connect to database and return a session
 //GetSession method will get the session for database communication
-func (ms *MongoStorage) GetSession() *mgo.Session {
+func (ms *DataStorage) Connect() *DbSession {
 	info := &mgo.DialInfo{
 		Addrs:    ms.Address,
 		Database: ms.Database,
@@ -66,7 +74,8 @@ func (ms *MongoStorage) GetSession() *mgo.Session {
 	if err != nil {
 		panic(err)
 	}
-
-	ms.Session = session
-	return session
+	//Check if it implements session interface..
+	sessionInterface := DbSession(session)
+	ms.Session = &sessionInterface
+	return &sessionInterface
 }
