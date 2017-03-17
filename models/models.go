@@ -11,7 +11,7 @@ import (
 
 type (
 
-	//Interface defining controller connection..
+	//Interface defining base model..
 	ModelProvider interface {
 		//Fetch a model..
 		get() (*ModelProvider, error)
@@ -46,7 +46,39 @@ type (
 		Type string
 	}
 
+
+	//Interface defining base model list type.
+	ModelListProvider interface {
+		//Fetch more data from database..
+		loadMore() (error)
+	}
+
+
+
+
+	// BaseModelList represents a list of items
+	BaseModelList struct {
+		// Total defines the total number of items in the collection matching the current
+		// context. If the storage handler cannot compute this value, -1 is set.
+		Total int
+		// Offset is the index of the first item of the list in the global collection.
+		Offset int
+		// Limit is the max number of items requested.
+		Limit int
+		// ModelProviderList is the list of items contained in the current page given the current
+		// context.
+		//It doesnot store all the data. Only store current data which has been fetched in the last query..
+		ModelProviderList []*ModelProvider
+	}
+
 )//type
+
+
+func (l *BaseModelList) loadMore() error{
+	//TODO: fetch data from server..clear the model provider list and add new added data..
+	//TODO: Work in progress..
+	return nil
+}
 
 
 func (b *BaseModel) init() (error)  {
