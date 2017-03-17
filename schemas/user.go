@@ -1,12 +1,11 @@
 package schemas
 
-
-
 import (
 	"time"
 	"github.com/graphql-go/graphql"
-	"github.com/SnaphyLabs/SnaphyByte/SchemaInterfaces"
+	"github.com/SnaphyLabs/SnaphyByte/schemaInterfaces"
 )
+
 
 type ErrorMessages struct {
 	Message string
@@ -21,7 +20,7 @@ func (e *ErrorMessages) Error() string {
 var userType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "User",
 	Interfaces:[] *graphql.Interface{
-		SchemaInterfaces.BaseModelInterface,
+		schemaInterfaces.BaseModelInterface,
 	},
 	Fields: graphql.Fields{
 		"Id": &graphql.Field{
@@ -78,43 +77,4 @@ var userType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
-// root mutation
-var rootMutation = graphql.NewObject(graphql.ObjectConfig{
-	Name: "RootMutation",
-	Fields: graphql.Fields{
-			//curl -g 'http://localhost:8080/graphql?query=mutation+_{createTodo(text:"My+new+todo"){id,text,done}}'
 
-
-		"createTodo": &graphql.Field{
-			Type:        todoType, // the return type for this field
-			Description: "Create new todo",
-			Args: graphql.FieldConfigArgument{
-				"text": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-			},
-			Resolve: func(params graphql.ResolveParams) (user interface{}, err error) {
-
-				return user, err
-			},
-		},
-			//curl -g 'http://localhost:8080/graphql?query=mutation+_{updateTodo(id:"a",done:true){id,text,done}}'
-
-
-		"updateTodo": &graphql.Field{
-			Type:        todoType, // the return type for this field
-			Description: "Update existing todo, mark it done or not done",
-			Args: graphql.FieldConfigArgument{
-				"done": &graphql.ArgumentConfig{
-					Type: graphql.Boolean,
-				},
-				"id": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-			},
-			Resolve: func(params graphql.ResolveParams) (list interface{}, err error) {
-				return list, err
-			},
-		},
-	},
-})
