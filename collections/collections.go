@@ -10,8 +10,6 @@ type (
 	}
 
 
-
-
 	// BaseModelList represents a list of items
 	BaseModelList struct {
 		// Total defines the total number of items in the collection matching the current
@@ -24,7 +22,7 @@ type (
 		// ModelProviderList is the list of items contained in the current page given the current
 		// context.
 		//It doesnot store all the data. Only store current data which has been fetched in the last query..
-		ModelProviderList []*models.ModelProvider
+		ModelsList []*models.ModelProvider
 	}
 
 )
