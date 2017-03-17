@@ -8,14 +8,20 @@ import (
 	"github.com/SnaphyLabs/SnaphyByte/SchemaInterfaces"
 )
 
+type ErrorMessages struct {
+	Message string
+}
+
+func (e *ErrorMessages) Error() string {
+	return e.Message
+}
 
 
 
-
-var UserType = graphql.NewObject(graphql.ObjectConfig{
+var userType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "User",
 	Interfaces:[] *graphql.Interface{
-		SchemaInterfaces.CommonPropertyInterface,
+		SchemaInterfaces.BaseModelInterface,
 	},
 	Fields: graphql.Fields{
 		"Id": &graphql.Field{
@@ -43,6 +49,30 @@ var UserType = graphql.NewObject(graphql.ObjectConfig{
 					t := time.Now().UTC()
 					return t.String(), nil
 				}
+			},
+		},
+		"Type": &graphql.Field{
+			Type:graphql.NewNonNull(graphql.String),
+			Description:"Store the collection type of User Model",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				return p.Source["Type"], nil;
+			},
+		},
+		"Password": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+			//TODO: Password must be stored using bcrypt encryption..
+			Description: "Password of user.",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if p.Source["Id"] == nil{
+					if p.Source["Password"] == nil || p.Source["Password"] == ""{
+						return nil, &ErrorMessages{
+							Message: "Password is required",
+						}
+					}
+				}
+
+				return p.Source["Password"], nil
+
 			},
 		},
 	},
