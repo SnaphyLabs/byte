@@ -18,7 +18,8 @@ type DbSession interface {
 	//Clear a data with matched query
 	Clear(lookup *resource.Lookup) (int, error)
 	//Initialize a new instance and return a dbsession
-	NewDb(setting interface{}) (*DbSession, error)
+	NewHandler(setting interface{}) (*DbSession, error)
+
 }
 
 
