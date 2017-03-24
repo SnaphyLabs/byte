@@ -1,8 +1,5 @@
 package models
 
-import (
-
-)
 
 type (
 
@@ -27,11 +24,4 @@ type (
 	}
 )
 
-//Test collection type..
-const COLLECTION_TYPE  = "TestSnaphyByte"
-
-func init()  {
-
-
-}
 

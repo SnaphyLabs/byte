@@ -8,7 +8,7 @@ import (
 //All Database Session will inherit this interface
 type DbSession interface {
 	//Find and return list of model found in db.
-	Find(lookup interface{}, offset, limit int) (interface{},error)
+	Find(lookup interface{}, offset, limit int) (interface{}, error)
 	//Update an model
 	Update(item, original  interface{}) error
 	//Insert an item or list of items with this query..
@@ -17,9 +17,6 @@ type DbSession interface {
 	Delete(item  interface{}) error
 	//Clear a data with matched query
 	Clear(lookup interface{}) (int, error)
-	//Initialize a new instance and return a dbsession
-	NewHandler(setting interface{}) (*DbSession, error)
-
 }
 
 
