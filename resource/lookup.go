@@ -2,12 +2,10 @@ package resource
 
 
 import (
-	"context"
-	"errors"
+	/*"errors"
 	"fmt"
-	"strings"
-
-	"github.com/rs/rest-layer/schema"
+	"strings"*/
+	"github.com/SnaphyLabs/SnaphyByte/schema"
 )
 
 // Lookup holds filter and sort used to select items in a resource collection
@@ -76,7 +74,7 @@ func (l *Lookup) Filter() schema.Query {
 func (l *Lookup) SetSorts(sorts []string) {
 	l.sort = sorts
 }
-
+/*
 // SetSort parses and validate a sort parameter and set it as lookup's Sort
 func (l *Lookup) SetSort(sort string, v schema.Validator) error {
 	sorts := []string{}
@@ -103,7 +101,8 @@ func (l *Lookup) SetSort(sort string, v schema.Validator) error {
 	}
 	l.sort = sorts
 	return nil
-}
+}*/
+/*
 
 // AddFilter parses and validate a filter parameter and add it to lookup's filter
 //
@@ -117,6 +116,9 @@ func (l *Lookup) AddFilter(filter string, v schema.Validator) error {
 	l.AddQuery(f)
 	return nil
 }
+*/
+
+
 
 // AddQuery add an existing schema.Query to the lookup's filters
 func (l *Lookup) AddQuery(query schema.Query) {
@@ -128,6 +130,8 @@ func (l *Lookup) AddQuery(query schema.Query) {
 		l.filter = append(l.filter, exp)
 	}
 }
+
+/*
 
 // SetSelector parses a selector expression, validates it and assign it to the current Lookup.
 func (l *Lookup) SetSelector(s string, v schema.Validator) error {
@@ -157,3 +161,4 @@ func (l *Lookup) ApplySelector(ctx context.Context, v schema.Validator, p map[st
 	return payload, err
 }
 
+*/

@@ -12,7 +12,7 @@ type (
 	//Connection implements ConnectionProvider
 	Controller struct {
 		//Store datastorage..value
-		database.DataStorage
+		//database.DataStorage
 	}
 )
 

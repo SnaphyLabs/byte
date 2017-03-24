@@ -2,9 +2,8 @@ package mongoDB
 
 import (
 	"gopkg.in/mgo.v2/bson"
-
-	"github.com/rs/rest-layer/schema"
 	"github.com/SnaphyLabs/SnaphyByte/resource"
+	"github.com/SnaphyLabs/SnaphyByte/schema"
 )
 
 // getField translate a schema field into a MongoDB field:
@@ -39,6 +38,7 @@ func getSort(l *resource.Lookup) []string {
 	}
 	return s
 }
+
 
 func translateQuery(q schema.Query) (bson.M, error) {
 	b := bson.M{}

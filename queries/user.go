@@ -8,7 +8,7 @@ import (
 
 
 var (
-	queryType = graphql.NewObject(graphql.ObjectConfig{
+	/*queryType = graphql.NewObject(graphql.ObjectConfig{
 		Name: "User",
 		Fields: graphql.Fields{
 			"getUserById": &graphql.Field{
@@ -48,7 +48,7 @@ var (
 				},
 			},
 		},
-	})
+	})*/
 
 )
 

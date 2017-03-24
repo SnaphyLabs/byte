@@ -21,13 +21,13 @@ func init(){
 
 func (uc *UserController)getUserById(u *models.User) (error) {
 	//TODO: Fetch user from database..
-	 _, err := uc.Find(nil, 0, 0)
+	 /*_, err := uc.Find(nil, 0, 0)
 	if err != nil{
 		return err
 	}
 
 
-	return nil
+	return nil*/
 }
 
 

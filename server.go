@@ -1,14 +1,14 @@
-package SnaphyByte
+package main
 
 import (
-	"github.com/SnaphyLabs/SnaphyByte/database"
+	/*"github.com/SnaphyLabs/SnaphyByte/database"
 	"time"
 	"github.com/rs/rest-layer/resource"
-	"encoding/json"
+	"encoding/json"*/
 	"fmt"
 	"github.com/SnaphyLabs/SnaphyByte/models"
-	"errors"
-	"reflect"
+	/*"errors"
+	"reflect"*/
 )
 
 const (
@@ -23,7 +23,7 @@ var UserList [2] *models.User
 
 func init(){
 
-	//Connect to mongodb database..
+	/*//Connect to mongodb database..
 	ds := &database.DataStorage{
 		Address:[]string{MongoDBHosts},
 		Database:Database,
@@ -40,11 +40,11 @@ func init(){
 		//Return the complete userList
 		return UserList, nil
 	}
-	
+
 	ds.Clear = func(lookup *resource.Lookup) (int, error) {
 		return 0, nil
 	}
-	
+
 	ds.Connect = func() (interface{}, error) {
 		//Write the logic to connect to the server..
 		i := new(interface{})
@@ -75,7 +75,7 @@ func init(){
 
 		return errors.New("Data Invalid")
 	}
-	
+
 	ds.Insert = func(item interface{}) error {
 		//Create an user model and save to database..
 		user := &models.User{
@@ -108,7 +108,7 @@ func init(){
 
 		return nil
 	}
-	
+
 	ds.Update = func(item interface{}, original interface{}) error {
 		return nil
 	}
@@ -117,7 +117,13 @@ func init(){
 	if err != nil{
 		panic(err)
 	}
-
+*/
 	//Now create controllers here..and other items..
 
+
+}
+
+//Run server here..
+func main(){
+	fmt.Println("Running server")
 }

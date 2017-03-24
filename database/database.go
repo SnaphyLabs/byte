@@ -1,7 +1,7 @@
 package database
 
 import (
-	"github.com/rs/rest-layer/resource"
+
 )
 
 
@@ -16,7 +16,7 @@ type DbSession interface {
 	//Delete a single item by matched query
 	Delete(item  interface{}) error
 	//Clear a data with matched query
-	Clear(lookup *resource.Lookup) (int, error)
+	Clear(lookup interface{}) (int, error)
 	//Initialize a new instance and return a dbsession
 	NewHandler(setting interface{}) (*DbSession, error)
 

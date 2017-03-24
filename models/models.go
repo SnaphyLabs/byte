@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strings"
 	"github.com/rs/xid"
-	"github.com/SnaphyLabs/SnaphyByte/others"
+	/*"github.com/SnaphyLabs/SnaphyByte/others"*/
 )
 
 type (
@@ -13,7 +13,7 @@ type (
 	//Interface defining base model..
 	ModelProvider interface {
 		//Fetch a model..
-		get() (*ModelProvider, error)
+		get() (ModelProvider, error)
 		//Save data to server..
 		save() (error)
 		//Destroy model to server..
@@ -71,19 +71,19 @@ func (b *BaseModel) NewModel(collectionType string)  error{
 	b.Created = time.Now()
 	b.Updated = time.Now()
 	//Generate the unique etag for current Data
-	if eTag, err := others.Util.GenEtag(b); err != nil{
+	/*if eTag, err := others.Util.GenEtag(b); err != nil{
 		return err
 	}else{
 		b.ETag = eTag
-	}
+	}*/
 
 	return nil
 }
 
 
 //Reload the model from the server. Id value must be present on the model..
-func (b *BaseModel) get() (*ModelProvider, error){
-	mp := &ModelProvider(b)
+func (b *BaseModel) get() (ModelProvider, error){
+	mp := ModelProvider(b)
 	return mp, nil
 }
 
