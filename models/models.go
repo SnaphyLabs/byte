@@ -59,7 +59,8 @@ var (
 
 
 
-func (b *BaseModel) init() (error)  {
+
+func init() {
 	fmt.Println("Running Models")
 	//TODO: initialize the model..or performs init model task..
 	LocalDatabase  = make(map[string][] interface{})
@@ -147,8 +148,8 @@ func (b *BaseModel) init() (error)  {
 	//Now add data to LocalDatabase..
 	LocalDatabase[USER_COLLECTION] = userList
 
-	return nil
 }
+
 
 
 

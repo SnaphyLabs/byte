@@ -6,7 +6,7 @@ import (
 	"github.com/rs/rest-layer/resource"
 	"encoding/json"*/
 	"fmt"
-	"github.com/SnaphyLabs/SnaphyByte/models"
+	_ "github.com/SnaphyLabs/SnaphyByte/models"
 	/*"errors"
 	"reflect"*/
 )
@@ -19,7 +19,6 @@ const (
 	Collection =  "Demo"
 )
 
-var UserList [2] *models.User
 
 func init(){
 
@@ -126,4 +125,5 @@ func init(){
 //Run server here..
 func main(){
 	fmt.Println("Running server")
+
 }
