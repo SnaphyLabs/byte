@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/SnaphyLabs/SnaphyByte/database"
 	"time"
 	"errors"
 	"strings"
@@ -27,8 +26,7 @@ type (
 
 	//BaseModel implements ModelProvider
 	BaseModel struct {
-		//Define a Db Session of AnyType
-		dbSession *database.DbSession
+
 		// ID is used to uniquely identify the item in the resource collection.
 		ID interface{}
 		// ETag is an opaque identifier assigned by Snaphy Byte to a specific version of the item.
@@ -45,9 +43,6 @@ type (
 		//Type signifies the type of the class..
 		Type string
 	}
-
-
-
 )//type
 
 
@@ -58,6 +53,8 @@ func (b *BaseModel) init() (error)  {
 
 	return nil
 }
+
+
 
 //Create a new or re-initializes a model with Id, Created, Updated and Type Property
 func (b *BaseModel) NewModel(collectionType string)  error{

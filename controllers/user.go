@@ -1,9 +1,7 @@
 package controllers
 
-import (
-	"github.com/robinskumar73/byte/models"
-	"github.com/SnaphyLabs/SnaphyByte/database"
-)
+import "github.com/SnaphyLabs/SnaphyByte/models"
+
 
 type (
 	//Inherit controller interface..
@@ -16,14 +14,18 @@ type (
 
 
 func init(){
-	uc := new(UserController)
-	ms := database.MongoStorage{}
-	ms.NewController(uc)
+	//uc := new(UserController)
+	//ms.NewController(uc)
 }
 
 
 func (uc *UserController)getUserById(u *models.User) (error) {
 	//TODO: Fetch user from database..
+	 _, err := uc.Find(nil, 0, 0)
+	if err != nil{
+		return err
+	}
+
 
 	return nil
 }
