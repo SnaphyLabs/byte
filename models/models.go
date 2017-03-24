@@ -6,12 +6,11 @@ import (
 	"strings"
 	"github.com/rs/xid"
 	/*"github.com/SnaphyLabs/SnaphyByte/others"*/
-	"github.com/robinskumar73/byte/models"
 	"encoding/json"
 	"fmt"
 	"crypto/md5"
-	"os/user"
 )
+
 
 type (
 
@@ -61,6 +60,7 @@ var (
 
 
 func (b *BaseModel) init() (error)  {
+	fmt.Println("Running Models")
 	//TODO: initialize the model..or performs init model task..
 	LocalDatabase  = make(map[string][] interface{})
 	user1 := &User{
