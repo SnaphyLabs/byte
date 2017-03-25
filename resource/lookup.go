@@ -22,36 +22,8 @@ type Lookup struct {
 	// resource representation at runtime by defining which fields should be included
 	// in the document. The REST Layer selector language allows field aliasing, field
 	// transformation with parameters and sub-item/collection embedding.
-	selector []Field
-}
-
-// Field is used with Lookup.selector to reformat the resource representation at runtime
-// using a field selection language inspired by GraphQL.
-type Field struct {
-	// Name is the name of the field as define in the resource's schema.
-	Name string
-	// Alias is the wanted name in the representation.
-	Alias string
-	// Params defines a list of params to be sent to the field's param handler if any.
-	Params map[string]interface{}
-	// Fields holds references to child fields if any
-	Fields []Field
-}
-
-// NewLookup creates an empty lookup object
-func NewLookup() *Lookup {
-	return &Lookup{
-		filter: schema.Query{},
-		sort:   []string{},
-	}
-}
-
-// NewLookupWithQuery creates an empty lookup object with a given query
-func NewLookupWithQuery(q schema.Query) *Lookup {
-	return &Lookup{
-		filter: q,
-		sort:   []string{},
-	}
+	//Remove fields here..
+	//selector []Field
 }
 
 // Sort is a list of resource fields or sub-fields separated
@@ -130,6 +102,8 @@ func (l *Lookup) AddQuery(query schema.Query) {
 		l.filter = append(l.filter, exp)
 	}
 }
+
+
 
 /*
 

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"strings"
 	"github.com/rs/xid"
-	/*"github.com/SnaphyLabs/SnaphyByte/others"*/
 	"encoding/json"
 	"fmt"
 	"crypto/md5"
@@ -15,9 +14,9 @@ import (
 type (
 
 	//Interface defining base model..
-	ModelProvider interface {
+	ModelInterface interface {
 		//Fetch a model..
-		get() (ModelProvider, error)
+		get() (ModelInterface, error)
 		//Save data to server..
 		save() (error)
 		//Destroy model to server..
@@ -28,9 +27,9 @@ type (
 		NewModel(collectionType string) (error)
 	}
 
+
 	//BaseModel implements ModelProvider
 	BaseModel struct {
-
 		// ID is used to uniquely identify the item in the resource collection.
 		ID interface{}
 		// ETag is an opaque identifier assigned by Snaphy Byte to a specific version of the item.
@@ -44,24 +43,26 @@ type (
 		// Updated stores the last time the item was updated. This field is used to populate the
 		// Last-Modified header and to handle conditional requests.
 		Created time.Time
-		//Type signifies the type of the class..
+		//Type signifies the type of the collection..
 		Type string
+		Payload map[string]interface{}
 	}
 )//type
+
+
 
 //LocalDatabase
 var (
 	//Type will hold all data of each collection type..
 	LocalDatabase map[string][] interface{}
 	USER_COLLECTION string = "user"
-	BOOK_COLLECTION string = "book"
 )
 
 
 
 
 func init() {
-	fmt.Println("Running Models")
+/*	fmt.Println("Running Models")
 	//TODO: initialize the model..or performs init model task..
 	LocalDatabase  = make(map[string][] interface{})
 	user1 := &User{
@@ -146,7 +147,7 @@ func init() {
 	userList[0] = user4
 	userList[0] = user5
 	//Now add data to LocalDatabase..
-	LocalDatabase[USER_COLLECTION] = userList
+	LocalDatabase[USER_COLLECTION] = userList*/
 
 }
 
@@ -178,8 +179,9 @@ func (b *BaseModel) NewModel(collectionType string)  error{
 }
 
 
+
 // Etag computes an etag based on containt of the payload
-func GenEtag(modelInterface ModelProvider) (string, error) {
+func GenEtag(modelInterface ModelInterface) (string, error) {
 	b, err := json.Marshal(modelInterface)
 	if err != nil {
 		return "", err
@@ -188,11 +190,14 @@ func GenEtag(modelInterface ModelProvider) (string, error) {
 }
 
 
+
 //Reload the model from the server. Id value must be present on the model..
-func (b *BaseModel) get() (ModelProvider, error){
-	mp := ModelProvider(b)
+func (b *BaseModel) get() (ModelInterface, error){
+	mp := ModelInterface(b)
 	return mp, nil
 }
+
+
 
 //Save the model to the server..
 func (b *BaseModel) save() (error){

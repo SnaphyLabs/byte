@@ -4,13 +4,15 @@ import "github.com/SnaphyLabs/SnaphyByte/models"
 
 type (
 	//Interface defining base model list type.
-	ModelListProvider interface {
+	ModelListInterface interface {
 		//Fetch more data from database..
 		loadMore() (error)
 	}
 
 
 	// BaseModelList represents a list of items
+	//
+	// BaseModelList implements ModelListInterface
 	BaseModelList struct {
 		// Total defines the total number of items in the collection matching the current
 		// context. If the storage handler cannot compute this value, -1 is set.
@@ -22,7 +24,7 @@ type (
 		// ModelProviderList is the list of items contained in the current page given the current
 		// context.
 		//It doesnot store all the data. Only store current data which has been fetched in the last query..
-		ModelsList []*models.ModelProvider
+		Models []*models.BaseModel
 	}
 
 )
