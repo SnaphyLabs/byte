@@ -171,7 +171,11 @@ func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 	//Also check for collection at first level and throw error if not present..
 	if parentKey == ""{
 		//Now check if the query has collection key defined or not.
-		
+		if q["$collection"] != nil{
+
+		}else{
+			return nil, errors.New("$collection type not found at parent level.")
+		}
 	}
 
 
