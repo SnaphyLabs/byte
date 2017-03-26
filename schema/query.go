@@ -19,10 +19,8 @@ type Expression interface {
 type Value interface{}
 
 //Name of user defined collections.
-type COLLECTION_TYPE struct {
-	Field string
-	//Values could be an array or an string..
-	Value []Value
+type COLLECTION struct {
+	Value string
 }
 
 
@@ -172,7 +170,17 @@ func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 	if parentKey == ""{
 		//Now check if the query has collection key defined or not.
 		if q["$collection"] != nil{
+			var (
+				c string
+				ok bool
+			)
+			if c, ok = q["$collection"].(string); !ok{
+				return nil, errors.New("$collection must be of string type")
+			}
 
+			queries = append(queries, COLLECTION{Value: c})
+			//Now remove the $collection key from the query..
+			delete(q, "$collection")
 		}else{
 			return nil, errors.New("$collection type not found at parent level.")
 		}
