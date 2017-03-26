@@ -169,6 +169,12 @@ func ParseQuery(query string) (Query, error) {
 func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 	queries := Query{}
 	//Also check for collection at first level and throw error if not present..
+	if parentKey == ""{
+		//Now check if the query has collection key defined or not.
+		
+	}
+
+
 	for key, exp := range q {
 		switch key {
 		case "$text":
