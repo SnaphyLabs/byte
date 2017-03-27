@@ -2,9 +2,6 @@ package resource
 
 
 import (
-	/*"errors"
-	"fmt"
-	"strings"*/
 	"github.com/SnaphyLabs/SnaphyByte/schema"
 )
 

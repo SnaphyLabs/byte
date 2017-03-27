@@ -12,7 +12,8 @@ type Query []Expression
 
 // Expression is a query or query component that can be matched against a payoad.
 type Expression interface {
-	Match(payload map[string]interface{}) bool
+	//TODO: Define  match for each interface..
+	//Match(payload map[string]interface{}) bool
 }
 
 // Value represents any kind of value to use in query
@@ -186,7 +187,7 @@ func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 				ok bool
 			)
 			if c, ok = q["$collection"].(string); !ok{
-				return nil, errors.New("$collection must be of string type")
+				//return nil, errors.New("$collection must be of string type")
 			}
 
 			queries = append(queries, COLLECTION{Value: c})
