@@ -103,7 +103,10 @@ type Not struct{
 	Value Expression
 }
 
+
+
 type Nor []Query
+
 
 
 //--------------------------------------------------------------ELEMENT QUERY OPERATOR-----------------------------------------------------------------
@@ -115,6 +118,7 @@ type Exist struct {
 }
 
 
+
 //--------------------------------------------------------------EVALUATION QUERY OPERATOR--------------------------------------------------------------
 //Mod operation..
 type Mod struct {
@@ -124,11 +128,14 @@ type Mod struct {
 }
 
 
+
 //Regex matches values that match to a specified regular expression.
 type Regex struct {
 	Field string
 	Value *regexp.Regexp
 }
+
+
 
 //Supports text based search..
 type Text struct {
@@ -138,10 +145,14 @@ type Text struct {
 	DiacriticSensitive bool
 }
 
+
+
 //NewQuery returns a new query with the provided key/value validated against validator
 func NewQuery(q map[string]interface{}) (Query, error) {
 	return validateQuery(q, "")
 }
+
+
 
 // ParseQuery parses and validate a query as string
 //pattern
@@ -349,7 +360,7 @@ func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 			for _, subQuery := range subQueries {
 				sq, ok := subQuery.(map[string]interface{})
 				if !ok {
-					return nil, fmt.Errorf("value for $nor must be an array of dicts")
+					return nil, errors.New("Value for $nor must be an array of dicts")
 				}
 				query, err := validateQuery(sq, "")
 				if err != nil {
@@ -358,22 +369,21 @@ func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 				//TODO: Error chances..here it must be an array of queries an not and expression..
 				subQList = append(subQList, query)
 			}
+			//Add Nor query to the list..
+			queries = append(queries, Nor(subQList))
 
-			queries = append(queries, subQList)
-
+		//Comparision Query Operator..
+		case "$eq":
+			if parentKey == "" {
+				return nil, errors.New("$eq cant be at first level")
+			}
+			queries = append(queries, Equal{Field: parentKey, Value: exp })
 		case "$ne":
 			op := key
 			if parentKey == "" {
 				return nil, fmt.Errorf("%s can't be at first level", op)
 			}
 			//TODO: Validate the field present in the value..
-			/*if field := validator.GetField(parentKey); field != nil {
-				if field.Validator != nil {
-					if _, err := field.Validator.Validate(exp); err != nil {
-						return nil, fmt.Errorf("invalid query expression for field `%s': %s", parentKey, err)
-					}
-				}
-			}*/
 			queries = append(queries, NotEqual{Field: parentKey, Value: exp})
 		case "$gt", "$gte", "$lt", "$lte":
 			op := key
@@ -401,13 +411,10 @@ func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 				case "$gt":
 					queries = append(queries, GreaterThan{Field: parentKey, Value: exp})
 				case "$gte":
-					//queries = append(queries, GreaterOrEqual{Field: parentKey, Value: n})
 					queries = append(queries, GreaterOrEqual{Field: parentKey, Value: exp})
 				case "$lt":
-					//queries = append(queries, LowerThan{Field: parentKey, Value: n})
 					queries = append(queries, LowerThan{Field: parentKey, Value: exp})
 				case "$lte":
-					//queries = append(queries, LowerOrEqual{Field: parentKey, Value: n})
 					queries = append(queries, LowerOrEqual{Field: parentKey, Value: exp})
 			}
 		case "$in", "$nin":
