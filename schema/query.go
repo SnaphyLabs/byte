@@ -187,14 +187,14 @@ func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 				ok bool
 			)
 			if c, ok = q["$collection"].(string); !ok{
-				//return nil, errors.New("$collection must be of string type")
+				return nil, errors.New("$collection must be of string type")
 			}
 
 			queries = append(queries, COLLECTION{Value: c})
 			//Now remove the $collection key from the query..
 			delete(q, "$collection")
 		}else{
-			return nil, errors.New("$collection type not found at parent level.")
+			//return nil, errors.New("$collection type not found at parent level.")
 		}
 	}
 
