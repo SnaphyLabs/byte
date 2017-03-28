@@ -20,8 +20,16 @@ type Lookup struct {
 	// in the document. The REST Layer selector language allows field aliasing, field
 	// transformation with parameters and sub-item/collection embedding.
 	//Remove fields here..
-	//selector []Field
+	selector []string
 }
+
+//Get list of fields..
+func (l *Lookup) Field() []string  {
+	return l.selector
+}
+
+
+
 
 // Sort is a list of resource fields or sub-fields separated
 // by comas (,). To invert the sort, a minus (-) can be prefixed.
@@ -31,6 +39,8 @@ func (l *Lookup) Sort() []string {
 	return l.sort
 }
 
+
+
 // Filter is a MongoDB inspired query with a more limited set of capabilities.
 //
 // See https://github.com/rs/rest-layer#filtering for more info.
@@ -38,11 +48,15 @@ func (l *Lookup) Filter() schema.Query {
 	return l.filter
 }
 
+
+
 // SetSorts set the sort fields with a pre-parsed list of fields to sort on.
 // This method doesn't validate sort fields.
 func (l *Lookup) SetSorts(sorts []string) {
 	l.sort = sorts
 }
+
+
 /*
 // SetSort parses and validate a sort parameter and set it as lookup's Sort
 func (l *Lookup) SetSort(sort string, v schema.Validator) error {
@@ -103,7 +117,6 @@ func (l *Lookup) AddQuery(query schema.Query) {
 
 
 /*
-
 // SetSelector parses a selector expression, validates it and assign it to the current Lookup.
 func (l *Lookup) SetSelector(s string, v schema.Validator) error {
 	pos := 0

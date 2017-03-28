@@ -175,6 +175,7 @@ func ParseQuery(query string) (Query, error) {
 }
 
 
+
 // validateQuery recursively validates and cast a query
 func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 	queries := Query{}
