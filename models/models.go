@@ -10,15 +10,14 @@ import (
 
 
 type (
-
 	//Interface defining base model..
 	ModelInterface interface {
 		//Fetch a model..
-		get() (ModelInterface, error)
+		Get() (ModelInterface, error)
 		//Save data to server..
-		save() (error)
+		Save() (error)
 		//Destroy model to server..
-		destroy() error
+		Destroy() error
 		//Perform initialization on model. removed.
 		//init() error
 		//Create a new instance of model with IdProperty, Created, Updated, Etag, Type
@@ -31,7 +30,6 @@ type (
 		NewId()
 		//Copy and create new model from it..
 		Copy() (*BaseModel, error)
-
 	}
 
 
@@ -58,10 +56,17 @@ type (
 
 
 
+
+
 func init() {
 
 }
 
+//TODO: Later add model methods..
+func (b *BaseModel)Method() struct {
+
+
+}
 
 
 //Create a new or re-initializes a model with Id, Created, Updated and Type Property
@@ -133,7 +138,7 @@ func (b *BaseModel) GenEtag() error{
 
 
 //Reload the model from the server. Id value must be present on the model..
-func (b *BaseModel) get() (ModelInterface, error){
+func (b *BaseModel) Get() (ModelInterface, error){
 	mp := ModelInterface(b)
 	return mp, nil
 }
@@ -141,7 +146,7 @@ func (b *BaseModel) get() (ModelInterface, error){
 
 
 //Save the model to the server..
-func (b *BaseModel) save() (error){
+func (b *BaseModel) Save() (error){
 	//TODO: Save data to database..
 
 	return nil
