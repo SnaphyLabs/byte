@@ -5,9 +5,7 @@ import (
 	"errors"
 	"strings"
 	"github.com/rs/xid"
-	"encoding/json"
-	"fmt"
-	"crypto/md5"
+	"github.com/SnaphyLabs/SnaphyUtil"
 )
 
 
@@ -25,6 +23,15 @@ type (
 		//init() error
 		//Create a new instance of model with IdProperty, Created, Updated, Etag, Type
 		NewModel(collectionType string) (error)
+		//Generate etag for data.. and assosiate it..
+		GenEtag() (error)
+		//Update model with new Etag and Updated time property.
+		Update() error
+		//Generate a new Id for the model..
+		NewId()
+		//Copy and create new model from it..
+		Copy() (*BaseModel, error)
+
 	}
 
 
@@ -50,6 +57,7 @@ type (
 )//type
 
 
+
 func init() {
 
 }
@@ -64,14 +72,55 @@ func (b *BaseModel) NewModel(collectionType string)  error{
 	}else{
 		return errors.New("Collection Type is required")
 	}
+	//Generate a new Id..
+	b.newId()
+
+	b.Created = time.Now()
+	if err := b.Update(); err != nil{
+		return err
+	}
+	return nil
+}
+
+
+
+//Update model with updated and new Etag property..
+//This method just update the Etag and Updated property it doesn't update model to server.
+func (b *BaseModel)Update() error  {
+	b.Updated = time.Now()
+	if err := b.GenEtag(); err != nil{
+		return err
+	}
+	return nil
+}
+
+
+//Generate a new Id for the model
+//PRIVATE METHOD for internal use only
+func (b *BaseModel) newId()  {
 	//Generate an Id for model
 	guid := xid.New()
 	b.ID = guid.String()
+}
 
-	b.Created = time.Now()
-	b.Updated = time.Now()
+
+//Copy the current model and create a new model with changed Id, Etag and Updated, created property...
+func (b *BaseModel) Copy() (*BaseModel, error)   {
+	copyb := &BaseModel{}
+	copyb.Payload = b.Payload
+	if err := copyb.NewModel(b.Type); err != nil{
+		return nil, err
+	}else{
+		return copyb, nil
+	}
+
+}
+
+
+//Generate Etag for the model
+func (b *BaseModel) GenEtag() error{
 	//Generate the unique etag for current Data
-	if eTag, err := GenEtag(b); err != nil{
+	if eTag, err := SnaphyUtil.GenEtag(b); err != nil{
 		return err
 	}else{
 		b.ETag = eTag
@@ -80,16 +129,6 @@ func (b *BaseModel) NewModel(collectionType string)  error{
 	return nil
 }
 
-
-
-// Etag computes an etag based on containt of the payload
-func GenEtag(modelInterface ModelInterface) (string, error) {
-	b, err := json.Marshal(modelInterface)
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%x", md5.Sum(b)), nil
-}
 
 
 

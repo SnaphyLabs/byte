@@ -28,6 +28,11 @@ func (l *Lookup) Field() []string  {
 	return l.selector
 }
 
+//Add fields selector to selector
+func (l *Lookup)AddField(selector []string) {
+	l.selector = selector
+}
+
 
 
 
@@ -44,8 +49,8 @@ func (l *Lookup) Sort() []string {
 // Filter is a MongoDB inspired query with a more limited set of capabilities.
 //
 // See https://github.com/rs/rest-layer#filtering for more info.
-func (l *Lookup) Filter() schema.Query {
-	return l.filter
+func (l *Lookup) Filter() *schema.Query {
+	return &l.filter
 }
 
 

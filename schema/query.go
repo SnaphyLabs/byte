@@ -175,6 +175,17 @@ func ParseQuery(query string) (Query, error) {
 }
 
 
+//Add some query to an existing query..
+func (q *Query) AppendQuery(subq map[string]interface{}) error{
+	if subexp, err := validateQuery(subq, ""); err != nil{
+		return err
+	}else{
+		//Append data to pointer..
+		*q = append(*q, subexp...)
+		return nil
+	}
+}
+
 
 // validateQuery recursively validates and cast a query
 func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
