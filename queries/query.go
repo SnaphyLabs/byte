@@ -6,13 +6,52 @@ import (
 	"errors"
 	"github.com/SnaphyLabs/SnaphyByte/schemaInterfaces"
 	"github.com/SnaphyLabs/SnaphyByte/controllers"
+	"gopkg.in/mgo.v2"
+	"time"
+	"log"
+	"github.com/SnaphyLabs/mongoByte"
+	"github.com/SnaphyLabs/SnaphyByte/resource"
+	"fmt"
 )
 
+var AuthorController *controllers.Controller
+var BookController *controllers.Controller
 
 
 func init(){
-	
-	controllers.NewCollection()
+	const (
+		MongoDBHosts = "localhost:27017"
+		AuthDatabase = "drugcorner"
+		AuthUserName = "robins"
+		AuthPassword = "12345"
+		Collection = "SnaphyModelDefinition"
+
+		BOOK_TYPE = "book"
+		AUTHOR_TYPE = "author"
+	)
+	// We need this object to establish a session to our MongoDB.
+	mongoDBDialInfo := &mgo.DialInfo{
+		Addrs:    []string{MongoDBHosts},
+		Timeout:  60 * time.Second,
+		Database: AuthDatabase,
+		Username: AuthUserName,
+		Password: AuthPassword,
+	}
+
+	mongoSession, err := mgo.DialWithInfo(mongoDBDialInfo)
+	//Get a handler for handling data..
+
+	if err != nil {
+		log.Fatalf("CreateSession: %s\n", err)
+	}
+
+	if AuthorController, err := controllers.NewCollection(AUTHOR_TYPE, mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
+		panic(err)
+	}
+
+	if BookController, err := controllers.NewCollection(BOOK_TYPE, mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
+		panic(err)
+	}
 }
 
 
@@ -171,13 +210,34 @@ var (
 					},
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					return GetHero(p.Args["episode"]), nil
+					var lookup *resource.Lookup
+					return AuthorController.FindById(p.Context, p.Args["id"].(string), lookup)
+					//return GetHero(p.Args["episode"]), nil
+				},
+			},
+
+			"getBook": &graphql.Field{
+				Type: BookType,
+				Description:"Returns book by id",
+				Args: graphql.FieldConfigArgument{
+					"id": &graphql.ArgumentConfig{
+						Description: "Return  book by id",
+						Type: graphql.NewNonNull(graphql.ID),
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					var lookup *resource.Lookup
+					return BookController.FindById(p.Context, p.Args["id"].(string), lookup)
+					//return GetHero(p.Args["episode"]), nil
 				},
 			},
 		},
 	})
 
+	testSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
+		Query: queryType,
 
+	})
 
 
 )

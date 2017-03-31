@@ -11,14 +11,6 @@ import (
 	"reflect"*/
 )
 
-const (
-	MongoDBHosts = "localhost:27017"
-	Database = "drugcorner"
-	UserName = "robins"
-	Password = "12345"
-	Collection =  "Demo"
-)
-
 
 func init(){
 
