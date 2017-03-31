@@ -62,12 +62,6 @@ func init() {
 
 }
 
-//TODO: Later add model methods..
-func (b *BaseModel)Method() struct {
-
-
-}
-
 
 //Create a new or re-initializes a model with Id, Created, Updated and Type Property
 func (b *BaseModel) NewModel(collectionType string)  error{
@@ -139,8 +133,9 @@ func (b *BaseModel) GenEtag() error{
 
 //Reload the model from the server. Id value must be present on the model..
 func (b *BaseModel) Get() (ModelInterface, error){
-	mp := ModelInterface(b)
-	return mp, nil
+	//TODO: implement later
+	//mp := ModelInterface(b)
+	return nil, nil
 }
 
 

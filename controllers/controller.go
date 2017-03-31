@@ -303,7 +303,7 @@ func (c *Controller)Exists(ctx context.Context,  id interface{}) (bool, error){
 	})
 
 	if count, err := c.Count(ctx, l); err != nil{
-		return nil, err
+		return false, err
 	}else{
 		if count > 0 {
 			return true, nil

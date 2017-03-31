@@ -3,7 +3,6 @@ package queries
 import (
 	"github.com/graphql-go/graphql"
 	"github.com/SnaphyLabs/SnaphyByte/models"
-	"errors"
 	"github.com/SnaphyLabs/SnaphyByte/schemaInterfaces"
 	"github.com/SnaphyLabs/SnaphyByte/controllers"
 	"gopkg.in/mgo.v2"
@@ -11,24 +10,21 @@ import (
 	"log"
 	"github.com/SnaphyLabs/mongoByte"
 	"github.com/SnaphyLabs/SnaphyByte/resource"
-	"fmt"
 )
 
-var AuthorController *controllers.Controller
-var BookController *controllers.Controller
+const (
+	MongoDBHosts = "localhost:27017"
+	AuthDatabase = "drugcorner"
+	AuthUserName = "robins"
+	AuthPassword = "12345"
+	Collection = "SnaphyModelDefinition"
 
+	BOOK_TYPE = "book"
+	AUTHOR_TYPE = "author"
+)
 
 func init(){
-	const (
-		MongoDBHosts = "localhost:27017"
-		AuthDatabase = "drugcorner"
-		AuthUserName = "robins"
-		AuthPassword = "12345"
-		Collection = "SnaphyModelDefinition"
 
-		BOOK_TYPE = "book"
-		AUTHOR_TYPE = "author"
-	)
 	// We need this object to establish a session to our MongoDB.
 	mongoDBDialInfo := &mgo.DialInfo{
 		Addrs:    []string{MongoDBHosts},
@@ -37,26 +33,25 @@ func init(){
 		Username: AuthUserName,
 		Password: AuthPassword,
 	}
-
-	mongoSession, err := mgo.DialWithInfo(mongoDBDialInfo)
+	var err error
+	mongoSession, err = mgo.DialWithInfo(mongoDBDialInfo)
 	//Get a handler for handling data..
 
 	if err != nil {
 		log.Fatalf("CreateSession: %s\n", err)
 	}
 
-	if AuthorController, err := controllers.NewCollection(AUTHOR_TYPE, mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
-		panic(err)
-	}
 
-	if BookController, err := controllers.NewCollection(BOOK_TYPE, mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
-		panic(err)
-	}
+
+
 }
 
 
 
 var (
+	//AuthorController *controllers.Controller
+	//BookController *controllers.Controller
+	mongoSession *mgo.Session
 	//Define a user type...
 	UserType = graphql.NewObject(graphql.ObjectConfig{
 		Name: "User",
@@ -71,7 +66,7 @@ var (
 					},
 				},*/
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(models.BaseModel); ok {
+					if model, ok := p.Source.(*models.BaseModel); ok {
 						return model.ID, nil
 					}
 					return nil, nil
@@ -86,7 +81,7 @@ var (
 					},
 				},*/
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(models.BaseModel); ok {
+					if model, ok := p.Source.(*models.BaseModel); ok {
 						return model.ETag, nil
 					}
 					return nil, nil
@@ -95,7 +90,7 @@ var (
 			"created": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(models.BaseModel); ok {
+					if model, ok := p.Source.(*models.BaseModel); ok {
 						return model.Created, nil
 					}
 					return nil, nil
@@ -104,16 +99,16 @@ var (
 			"updated": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(models.BaseModel); ok {
+					if model, ok := p.Source.(*models.BaseModel); ok {
 						return model.Updated, nil
 					}
 					return nil, nil
 				},
 			},
 			"payload": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.Object{}),
+				Type: graphql.String,
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(models.BaseModel); ok {
+					if model, ok := p.Source.(*models.BaseModel); ok {
 						return model.Payload, nil
 					}
 					return nil, nil
@@ -141,7 +136,7 @@ var (
 					},
 				},*/
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(models.BaseModel); ok {
+					if model, ok := p.Source.(*models.BaseModel); ok {
 						return model.ID, nil
 					}
 					return nil, nil
@@ -156,7 +151,7 @@ var (
 					},
 				},*/
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(models.BaseModel); ok {
+					if model, ok := p.Source.(*models.BaseModel); ok {
 						return model.ETag, nil
 					}
 					return nil, nil
@@ -165,7 +160,7 @@ var (
 			"created": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(models.BaseModel); ok {
+					if model, ok := p.Source.(*models.BaseModel); ok {
 						return model.Created, nil
 					}
 					return nil, nil
@@ -174,16 +169,16 @@ var (
 			"updated": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(models.BaseModel); ok {
+					if model, ok := p.Source.(*models.BaseModel); ok {
 						return model.Updated, nil
 					}
 					return nil, nil
 				},
 			},
 			"payload": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.Object{}),
+				Type: graphql.String,
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(models.BaseModel); ok {
+					if model, ok := p.Source.(*models.BaseModel); ok {
 						return model.Payload, nil
 					}
 					return nil, nil
@@ -210,8 +205,14 @@ var (
 					},
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					var lookup *resource.Lookup
-					return AuthorController.FindById(p.Context, p.Args["id"].(string), lookup)
+					var lookup *resource.Lookup = &resource.Lookup{}
+					if AuthorController, err := controllers.NewCollection(AUTHOR_TYPE, mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
+						panic(err)
+					}else{
+						return AuthorController.FindById(p.Context, p.Args["id"].(string), lookup)
+						//return  AuthorController.FindById(p.Context, "b3cdrv8j1n6jakdgbn60", lookup)
+					}
+
 					//return GetHero(p.Args["episode"]), nil
 				},
 			},
@@ -226,15 +227,18 @@ var (
 					},
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					var lookup *resource.Lookup
-					return BookController.FindById(p.Context, p.Args["id"].(string), lookup)
-					//return GetHero(p.Args["episode"]), nil
+					var lookup *resource.Lookup = &resource.Lookup{}
+					if BookController, err := controllers.NewCollection(BOOK_TYPE, mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
+						panic(err)
+					}else{
+						return BookController.FindById(p.Context, p.Args["id"].(string), lookup)
+					}
 				},
 			},
 		},
 	})
 
-	testSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
+	TestSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
 		Query: queryType,
 
 	})
