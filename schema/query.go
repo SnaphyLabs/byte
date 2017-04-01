@@ -193,18 +193,18 @@ func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 	//Also check for collection at first level and throw error if not present..
 	if parentKey == ""{
 		//Now check if the query has collection key defined or not.
-		if q["$collection"] != nil{
+		if q["collection"] != nil{
 			var (
 				c string
 				ok bool
 			)
-			if c, ok = q["$collection"].(string); !ok{
+			if c, ok = q["collection"].(string); !ok{
 				return nil, errors.New("$collection must be of string type")
 			}
 
 			queries = append(queries, COLLECTION{Value: c})
 			//Now remove the $collection key from the query..
-			delete(q, "$collection")
+			delete(q, "collection")
 		}else{
 			//return nil, errors.New("$collection type not found at parent level.")
 		}
@@ -213,61 +213,61 @@ func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 
 	for key, exp := range q {
 		switch key {
-		case "$text":
+		case "text":
 			if parentKey != ""{
 				return nil, errors.New("$text can't be at second level.")
 			}
 			if subexp, ok := exp.(map[string]interface{}); ok {
 				//Now check for search type..
-				if subexp["$search"] == nil{
+				if subexp["search"] == nil{
 					return nil, errors.New("$search not found during processing $text query")
 				}
 				var searchValue string
-				if searchValue, ok = subexp["$search"].(string); ok {
+				if searchValue, ok = subexp["search"].(string); ok {
 					t := Text{
 						Search: searchValue,
 					}
 
-					if subexp["$language"] != nil{
+					if subexp["language"] != nil{
 						var lang string
-						if lang, ok = subexp["$language"].(string); ok{
+						if lang, ok = subexp["language"].(string); ok{
 							t.Language = lang
 						}else{
-							return nil, errors.New("$language must be of string type")
+							return nil, errors.New("language must be of string type")
 						}
 					}
 
-					if subexp["$caseSensitive"] != nil{
+					if subexp["caseSensitive"] != nil{
 						var cs bool
 						if cs, ok = subexp["$caseSensitive"].(bool); ok{
 							t.CaseSensitive = cs
 						}else{
-							return nil, errors.New("$caseSensitive must be of boolean type")
+							return nil, errors.New("caseSensitive must be of boolean type")
 						}
 					}
 
-					if subexp["$diacriticSensitive"] != nil{
+					if subexp["diacriticSensitive"] != nil{
 						var ds bool
-						if ds, ok = subexp["$diacriticSensitive"].(bool); ok{
+						if ds, ok = subexp["diacriticSensitive"].(bool); ok{
 							t.DiacriticSensitive = ds
 						}else{
-							return nil, errors.New("$diacriticSensitive must be of boolean type")
+							return nil, errors.New("diacriticSensitive must be of boolean type")
 						}
 					}
 
 					queries = append(queries, t)
 
 				}else{
-					return nil, errors.New("$search query value must be of string type")
+					return nil, errors.New("search query value must be of string type")
 				}
 
 			}else{
-				return nil, errors.New("$text invalid format found.")
+				return nil, errors.New("text invalid format found.")
 			}
 
-		case "$regex":
+		case "regex":
 			if parentKey == "" {
-				return nil, errors.New("$regex can't be at first level")
+				return nil, errors.New("regex can't be at first level")
 			}
 			if regex, ok := exp.(string); ok {
 				v, err := regexp.Compile(regex)
@@ -276,9 +276,9 @@ func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 				}
 				queries = append(queries, Regex{Field: parentKey, Value: v})
 			}
-		case "$mod":
+		case "mod":
 			if parentKey == ""{
-				return nil, errors.New("$mod can't be at first level")
+				return nil, errors.New("mod can't be at first level")
 			}
 
 			if v, ok := exp.([2]float64); ok {
@@ -292,18 +292,18 @@ func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 			}
 
 		//Element query operations cases..
-		case "$exists":
+		case "exists":
 			if parentKey == "" {
-				return nil, errors.New("$exists can't be at first level")
+				return nil, errors.New("exists can't be at first level")
 			}
 			positive, ok := exp.(bool)
 			if !ok {
-				return nil, errors.New("$exists can only get Boolean as value")
+				return nil, errors.New("exists can only get Boolean as value")
 			}
 			queries = append(queries, Exist{Field: parentKey, Value: positive})
 
 		//Logical Query Operations..
-		case "$or", "$and":
+		case "or", "and":
 			op := key
 			var subQueries []interface{}
 			var ok bool
@@ -328,19 +328,19 @@ func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 				subQList = append(subQList, query)
 			}
 			switch op {
-			case "$or":
+			case "or":
 				queries = append(queries, Or(subQList))
-			case "$and":
+			case "and":
 				queries = append(queries, And(subQList))
 			}
-		case "$not":
+		case "not":
 			//TODO: Test chances of error..
 			//Example db.inventory.find( { price: { $not: { $gt: 1.99 } } } )
 			if parentKey == ""{
-				return nil, errors.New("$not can't be a first level")
+				return nil, errors.New("not can't be a first level")
 			}
 			if subexp, ok := exp.(map[string]interface{}); ok {
-				subqueries, err := validateQuery(subexp, "$not")
+				subqueries, err := validateQuery(subexp, "not")
 				if err != nil{
 					return nil, err
 				}
@@ -353,20 +353,20 @@ func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 				}
 
 			}else{
-				return nil, errors.New("$not value must be a dict type only")
+				return nil, errors.New("not value must be a dict type only")
 			}
 
-		case "$nor":
+		case "nor":
 			//TODO: Test chances of error..
 			//Example db.inventory.find( { price: { $not: { $gt: 1.99 } } } )
 			if parentKey != ""{
-				return nil, errors.New("$nor can't be a second level")
+				return nil, errors.New("nor can't be a second level")
 			}
 			var subQueries []interface{}
 			var ok bool
 
 			if subQueries, ok = exp.([]interface{}); !ok {
-				return nil, errors.New("$nor value must be an array of dict type only")
+				return nil, errors.New("nor value must be an array of dict type only")
 			}
 
 			subQList := []Query{}
@@ -386,19 +386,19 @@ func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 			queries = append(queries, Nor(subQList))
 
 		//Comparision Query Operator..
-		case "$eq":
+		case "eq":
 			if parentKey == "" {
-				return nil, errors.New("$eq cant be at first level")
+				return nil, errors.New("eq cant be at first level")
 			}
 			queries = append(queries, Equal{Field: parentKey, Value: exp })
-		case "$ne":
+		case "ne":
 			op := key
 			if parentKey == "" {
 				return nil, fmt.Errorf("%s can't be at first level", op)
 			}
 			//TODO: Validate the field present in the value..
 			queries = append(queries, NotEqual{Field: parentKey, Value: exp})
-		case "$gt", "$gte", "$lt", "$lte":
+		case "gt", "gte", "lt", "lte":
 			op := key
 			if parentKey == "" {
 				return nil, fmt.Errorf("%s can't be at first level", op)
@@ -421,16 +421,16 @@ func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 				}
 			}*/
 			switch op {
-				case "$gt":
+				case "gt":
 					queries = append(queries, GreaterThan{Field: parentKey, Value: exp})
-				case "$gte":
+				case "gte":
 					queries = append(queries, GreaterOrEqual{Field: parentKey, Value: exp})
-				case "$lt":
+				case "lt":
 					queries = append(queries, LowerThan{Field: parentKey, Value: exp})
-				case "$lte":
+				case "lte":
 					queries = append(queries, LowerOrEqual{Field: parentKey, Value: exp})
 			}
-		case "$in", "$nin":
+		case "in", "nin":
 			op := key
 			if parentKey == "" {
 				return nil, fmt.Errorf("%s can't be at first level", op)
@@ -459,9 +459,9 @@ func validateQuery(q map[string]interface{}, parentKey string) (Query, error) {
 				}
 			//}
 			switch op {
-				case "$in":
+				case "in":
 					queries = append(queries, In{Field: parentKey, Values: values})
-				case "$nin":
+				case "nin":
 					queries = append(queries, NotIn{Field: parentKey, Values: values})
 			}
 
