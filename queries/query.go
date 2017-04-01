@@ -10,6 +10,7 @@ import (
 	"github.com/SnaphyLabs/mongoByte"
 	"github.com/SnaphyLabs/SnaphyByte/controllers"
 	"github.com/SnaphyLabs/SnaphyByte/resource"
+	"github.com/SnaphyLabs/SnaphyByte/schema"
 )
 
 const (
@@ -130,6 +131,15 @@ func init(){
 	//Define a user type...
 	userType = graphql.NewObject(graphql.ObjectConfig{
 		Name: "User",
+		IsTypeOf: func(p graphql.IsTypeOfParams) bool {
+			if model, ok := p.Value.(*models.BaseModel); ok{
+				if model.Type == "author"{
+					return true
+				}
+			}
+
+			return false
+		},
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.ID),
@@ -194,6 +204,14 @@ func init(){
 	//Define a user type...
 	bookType = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Book",
+		IsTypeOf: func(p graphql.IsTypeOfParams) bool {
+			if model, ok := p.Value.(*models.BaseModel); ok{
+				if model.Type == "book"{
+					return true
+				}
+			}
+			return false
+		},
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.ID),
@@ -267,18 +285,31 @@ func init(){
 						Description: "Return author of the book by id",
 						Type: graphql.NewNonNull(graphql.ID),
 					},
+					"$collection": &graphql.ArgumentConfig{
+						Description: "Type of collection.",
+						Type: graphql.NewNonNull(graphql.String),
+					},
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					var lookup *resource.Lookup = &resource.Lookup{}
+					var lookup *resource.Lookup = &resource.Lookup{
+					}
+
+					var query  schema.Query =  schema.Query{}
+					query.AppendQuery(p.Args)
+					lookup.AddQuery(query)
+
 					if AuthorController, err := controllers.NewCollection(AUTHOR_TYPE, mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
 						panic(err)
 					}else{
+
 						return AuthorController.FindById(p.Context, p.Args["id"].(string), lookup)
 					}
 				},
 			},
 
-			"getBook": &graphql.Field{
+
+
+			/*"getBook": &graphql.Field{
 				Type: bookType,
 				Description:"Returns book by id",
 				Args: graphql.FieldConfigArgument{
@@ -313,7 +344,7 @@ func init(){
 						return authorController.FindById(p.Context, p.Args["id"].(string), lookup)
 					}
 				},
-			},
+			},*/
 
 
 		},
@@ -321,6 +352,7 @@ func init(){
 
 	TestSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
 		Query: queryType,
+		Types: []graphql.Type{userType, bookType},
 
 	})
 }
