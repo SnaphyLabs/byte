@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"github.com/SnaphyLabs/SnaphyByte/models"
 	"github.com/SnaphyLabs/SnaphyUtil"
+	"errors"
 )
 
 const (
@@ -354,6 +355,23 @@ func init(){
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					var lookup *resource.Lookup = &resource.Lookup{}
 					var q *schema.Query = &schema.Query{}
+					//TODO: Validate for valid date type...
+					if offset, ok := p.Args["offset"].(string); ok{
+						if c, ok := SnaphyUtil.Base64Decode(offset); ok{
+							//Now add actual offset
+							date := make(map[string]interface{})
+							date["$lt"] = c
+							//TODO: Chance of error when created argument already provided.
+							if p.Args["created"] == nil{
+								p.Args["created"] = date
+							}
+							//Remove the actual offset..
+							delete(p.Args, "offset")
+						}else{
+							return nil, errors.New("Invalid offset type")
+						}
+					}
+
 					q.AppendQuery(p.Args)
 					lookup.AddQuery(*q)
 					if AuthorController, err := controllers.NewCollection(AUTHOR_TYPE, mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
