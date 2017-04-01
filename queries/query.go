@@ -125,7 +125,7 @@ func init(){
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					//Encode cursor..
 					if model, ok := p.Source.(*models.BaseModel); ok {
-						return SnaphyUtil.Base64Encode(model.ETag), nil
+						return SnaphyUtil.Base64Encode(model.Created.String()), nil
 					}
 					return nil, nil
 				},
@@ -357,7 +357,7 @@ func init(){
 					var q *schema.Query = &schema.Query{}
 					//TODO: Validate for valid date type...
 					if offset, ok := p.Args["offset"].(string); ok{
-						if c, ok := SnaphyUtil.Base64Decode(offset); ok{
+						if c, err := SnaphyUtil.Base64Decode(offset); !err{
 							//Now add actual offset
 							date := make(map[string]interface{})
 							date["$lt"] = c
