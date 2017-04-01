@@ -111,17 +111,6 @@ func init(){
 					return nil, nil
 				},
 			},
-			/*"type": &graphql.Field{
-				Type:	graphql.NewNonNull(graphql.String),
-				Args: graphql.FieldConfigArgument{
-					"$collection": &graphql.ArgumentConfig{
-						Description: "Collection type of a model",
-						Type:  graphql.NewNonNull(graphql.String),
-					},
-				},
-				Description: `Stores the name of collection.
-				When Creating multi-tenant model each model will have a type which will tell what typpe of collection does it belongs to.`,
-			},*/
 		},
 
 		//Implement Resolve type...return a simple grapql.Object as its has a mixed type of resolvers.
@@ -145,12 +134,6 @@ func init(){
 			"id": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.ID),
 				Description: "Unique Id of user type.",
-				/*Args: graphql.FieldConfigArgument{
-					"id": &graphql.ArgumentConfig{
-						Description: "Get user by Id",
-						Type: graphql.NewNonNull(graphql.ID),
-					},
-				},*/
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					if model, ok := p.Source.(*models.BaseModel); ok {
 						return model.ID, nil
@@ -215,12 +198,6 @@ func init(){
 			"id": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.ID),
 				Description: "Unique Id of user type.",
-				/*Args: graphql.FieldConfigArgument{
-					"id": &graphql.ArgumentConfig{
-						Description: "Get user by Id",
-						Type: graphql.NewNonNull(graphql.ID),
-					},
-				},*/
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					if model, ok := p.Source.(*models.BaseModel); ok {
 						return model.ID, nil
@@ -261,7 +238,7 @@ func init(){
 					return nil, nil
 				},
 			},
-			/*"payload": &graphql.Field{
+			"payload": &graphql.Field{
 				Type: graphql.String,
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					if model, ok := p.Source.(*models.BaseModel); ok {
@@ -269,7 +246,7 @@ func init(){
 					}
 					return nil, nil
 				},
-			},*/
+			},
 		},
 		Interfaces: []*graphql.Interface{
 			CommonPropertyInterface,
