@@ -3,12 +3,12 @@ package queries
 import (
 	"github.com/graphql-go/graphql"
 	"github.com/SnaphyLabs/SnaphyByte/models"
-	"github.com/SnaphyLabs/SnaphyByte/schemaInterfaces"
-	"github.com/SnaphyLabs/SnaphyByte/controllers"
+
 	"gopkg.in/mgo.v2"
 	"time"
 	"log"
 	"github.com/SnaphyLabs/mongoByte"
+	"github.com/SnaphyLabs/SnaphyByte/controllers"
 	"github.com/SnaphyLabs/SnaphyByte/resource"
 )
 
@@ -22,6 +22,19 @@ const (
 	BOOK_TYPE = "book"
 	AUTHOR_TYPE = "author"
 )
+
+
+
+var (
+	userType *graphql.Object
+	bookType *graphql.Object
+	CollectionTypes map[string]*graphql.Object
+	CommonPropertyInterface *graphql.Interface
+	mongoSession *mgo.Session
+	queryType *graphql.Object
+	TestSchema graphql.Schema
+)
+
 
 func init(){
 
@@ -48,12 +61,85 @@ func init(){
 
 
 
-var (
-	//AuthorController *controllers.Controller
-	//BookController *controllers.Controller
-	mongoSession *mgo.Session
+
+func init(){
+	CollectionTypes  = make(map[string]*graphql.Object)
+	CommonPropertyInterface = graphql.NewInterface(graphql.InterfaceConfig{
+		Name: "CommonProperty",
+		Description: "An object with an ID, Created, Updated, ETag",
+		Fields: graphql.Fields{
+			"id": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.ID),
+				Description: "Unique Id of model type.",
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					if model, ok := p.Source.(*models.BaseModel); ok {
+						return model.ID, nil
+					}
+					return nil, nil
+				},
+			},
+			"created": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					if model, ok := p.Source.(*models.BaseModel); ok {
+						return model.Created, nil
+					}
+					return nil, nil
+				},
+			},
+			"updated": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					if model, ok := p.Source.(*models.BaseModel); ok {
+						return model.Updated, nil
+					}
+					return nil, nil
+				},
+			},
+			"eTag": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+				Args: graphql.FieldConfigArgument{
+					"eTag": &graphql.ArgumentConfig{
+						Description: "Etag of model",
+						Type:  graphql.NewNonNull(graphql.String),
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					if model, ok := p.Source.(*models.BaseModel); ok {
+						return model.ETag, nil
+					}
+					return nil, nil
+				},
+			},
+			/*"type": &graphql.Field{
+				Type:	graphql.NewNonNull(graphql.String),
+				Args: graphql.FieldConfigArgument{
+					"$collection": &graphql.ArgumentConfig{
+						Description: "Collection type of a model",
+						Type:  graphql.NewNonNull(graphql.String),
+					},
+				},
+				Description: `Stores the name of collection.
+				When Creating multi-tenant model each model will have a type which will tell what typpe of collection does it belongs to.`,
+			},*/
+		},
+
+		//Implement Resolve type...return a simple grapql.Object as its has a mixed type of resolvers.
+		ResolveType: func(p graphql.ResolveTypeParams) (*graphql.Object){
+			if model, ok := p.Value.(*models.BaseModel); ok {
+				if model.Type == "author"{
+					return userType
+				}else{
+					return bookType
+				}
+			}
+			return nil
+		},
+	})
+
+
 	//Define a user type...
-	UserType = graphql.NewObject(graphql.ObjectConfig{
+	userType = graphql.NewObject(graphql.ObjectConfig{
 		Name: "User",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
@@ -74,12 +160,12 @@ var (
 			},
 			"eTag": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
-				/*Args: graphql.FieldConfigArgument{
+				Args: graphql.FieldConfigArgument{
 					"eTag": &graphql.ArgumentConfig{
 						Description: "Etag of model",
 						Type:  graphql.NewNonNull(graphql.String),
 					},
-				},*/
+				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					if model, ok := p.Source.(*models.BaseModel); ok {
 						return model.ETag, nil
@@ -116,14 +202,14 @@ var (
 			},
 		},
 		Interfaces: []*graphql.Interface{
-			schemaInterfaces.BaseModelInterface,
+			CommonPropertyInterface,
 		},
 	})
 
 
 
 	//Define a user type...
-	BookType = graphql.NewObject(graphql.ObjectConfig{
+	bookType = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Book",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
@@ -144,12 +230,12 @@ var (
 			},
 			"eTag": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
-				/*Args: graphql.FieldConfigArgument{
+				Args: graphql.FieldConfigArgument{
 					"eTag": &graphql.ArgumentConfig{
 						Description: "Etag of model",
 						Type:  graphql.NewNonNull(graphql.String),
 					},
-				},*/
+				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					if model, ok := p.Source.(*models.BaseModel); ok {
 						return model.ETag, nil
@@ -175,7 +261,7 @@ var (
 					return nil, nil
 				},
 			},
-			"payload": &graphql.Field{
+			/*"payload": &graphql.Field{
 				Type: graphql.String,
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					if model, ok := p.Source.(*models.BaseModel); ok {
@@ -183,21 +269,22 @@ var (
 					}
 					return nil, nil
 				},
-			},
+			},*/
 		},
 		Interfaces: []*graphql.Interface{
-			schemaInterfaces.BaseModelInterface,
+			CommonPropertyInterface,
 		},
 	})
+
 
 
 	//QueryType
 	queryType = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
-			"getAuthor": &graphql.Field{
-				Type: UserType,
-				Description:"Returns author of the book",
+			"findById": &graphql.Field{
+				Type: CommonPropertyInterface,
+				Description:"Find author of the book",
 				Args: graphql.FieldConfigArgument{
 					"id": &graphql.ArgumentConfig{
 						Description: "Return author of the book by id",
@@ -210,15 +297,12 @@ var (
 						panic(err)
 					}else{
 						return AuthorController.FindById(p.Context, p.Args["id"].(string), lookup)
-						//return  AuthorController.FindById(p.Context, "b3cdrv8j1n6jakdgbn60", lookup)
 					}
-
-					//return GetHero(p.Args["episode"]), nil
 				},
 			},
 
 			"getBook": &graphql.Field{
-				Type: BookType,
+				Type: bookType,
 				Description:"Returns book by id",
 				Args: graphql.FieldConfigArgument{
 					"id": &graphql.ArgumentConfig{
@@ -235,6 +319,26 @@ var (
 					}
 				},
 			},
+			"getAuthor": &graphql.Field{
+				Type: userType,
+				Description:"Returns author by id",
+				Args: graphql.FieldConfigArgument{
+					"id": &graphql.ArgumentConfig{
+						Description: "Return  user by id",
+						Type: graphql.NewNonNull(graphql.ID),
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					var lookup *resource.Lookup = &resource.Lookup{}
+					if authorController, err := controllers.NewCollection(AUTHOR_TYPE, mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
+						panic(err)
+					}else{
+						return authorController.FindById(p.Context, p.Args["id"].(string), lookup)
+					}
+				},
+			},
+
+
 		},
 	})
 
@@ -242,8 +346,8 @@ var (
 		Query: queryType,
 
 	})
+}
 
 
-)
 
 

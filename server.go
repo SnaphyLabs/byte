@@ -13,7 +13,8 @@ import (
 //Run server here..
 func main(){
 	fmt.Println("Running server")
-
+	/*schemaInterfaces.CollectionTypes["author"] = queries.UserType
+	schemaInterfaces.CollectionTypes["book"] = queries.BookType*/
 	// simplest relay-compliant graphql server HTTP handler
 	// using Starwars schema from `graphql-relay-go` examples
 	h := handler.New(&handler.Config{
@@ -28,22 +29,4 @@ func main(){
 	http.Handle("/graphql", h)
 	http.Handle("/", fs)
 	http.ListenAndServe(":8080", nil)
-
-	/*
-
-	// static file server to serve Graphiql in-browser editor
-	fs := http.FileServer(http.Dir("static"))
-
-	// serve a GraphQL endpoint at `/graphql`
-	http.Handle("/graphql", h)
-
-	// and serve!
-	http.ListenAndServe(":8080", nil)
-
-	*/
-
-/*
-	http.Handle("/graphql", h)
-	http.Handle("/", fs)
-	http.ListenAndServe(":8080", nil)*/
 }
