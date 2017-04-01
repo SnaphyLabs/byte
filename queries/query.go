@@ -2,7 +2,6 @@ package queries
 
 import (
 	"github.com/graphql-go/graphql"
-	"github.com/SnaphyLabs/SnaphyByte/models"
 
 	"gopkg.in/mgo.v2"
 	"time"
@@ -12,7 +11,8 @@ import (
 	"github.com/SnaphyLabs/SnaphyByte/resource"
 	"github.com/SnaphyLabs/SnaphyByte/schema"
 	"fmt"
-	b64 "encoding/base64"
+	//b64 "encoding/base64"
+	"github.com/SnaphyLabs/SnaphyByte/models"
 )
 
 const (
@@ -37,9 +37,9 @@ var (
 	payloadInterface *graphql.Interface
 	mongoSession *mgo.Session
 	queryType *graphql.Object
-	payloadData *graphql.Object
-	payloadInfo *graphql.Object
-	baseModel *graphql.Object
+	payloadDataType *graphql.Object
+	payloadInfoType *graphql.Object
+	baseModelType *graphql.Object
 	TestSchema graphql.Schema
 )
 
@@ -112,21 +112,20 @@ func init(){
 				Type: graphql.NewNonNull(graphql.String),
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					//TODO: Resolve this method..
-					/*if model, ok := p.Source.(*models.BaseModel); ok {
+					if model, ok := p.Source.(*models.BaseModel); ok {
 						return model.ETag, nil
-					}*/
+					}
 					return nil, nil
 				},
 			},
 		},
-
 	})
 
 
 
 	//Return a information related to payload interface..
-	payloadInfo = graphql.NewObject(graphql.ObjectConfig{
-		Name: "Payload Info. This model will contain the data values.",
+	payloadInfoType = graphql.NewObject(graphql.ObjectConfig{
+		Name: "PayloadInfo",
 		Description: "Payload info could be of any type of collection",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
@@ -179,9 +178,9 @@ func init(){
 				Type: graphql.NewNonNull(graphql.String),
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					//TODO: Resolve this method..
-					/*if model, ok := p.Source.(*models.BaseModel); ok {
+					if model, ok := p.Source.(*models.BaseModel); ok {
 						return model.ETag, nil
-					}*/
+					}
 					return nil, nil
 				},
 			},
@@ -192,11 +191,22 @@ func init(){
 	})
 
 
+	//Interface for payload
 	payloadInterface = graphql.NewInterface(graphql.InterfaceConfig{
-		Name: "Payload Model. This model will contain the data values.",
+		Name: "PayloadInterface",
 		Description: "Payload model could be of any type of collection",
 		Fields: graphql.Fields{
 			//Can accept fields of variable type..
+			"cursor": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					//TODO: Resolve this method..
+					if model, ok := p.Source.(*models.BaseModel); ok {
+						return model.ETag, nil
+					}
+					return nil, nil
+				},
+			},
 		},
 		//Implement Resolve type...return a simple grapql.Object as its has a mixed type of resolvers.
 		ResolveType: func(p graphql.ResolveTypeParams) (*graphql.Object){
@@ -214,84 +224,38 @@ func init(){
 
 
 
-	baseModel = graphql.NewObject(graphql.ObjectConfig{
-		Name: "Base Model. This model will contain the data values.",
+	baseModelType = graphql.NewObject(graphql.ObjectConfig{
+		Name: "BaseModel",
 		Description: "Payload model could be of any type of collection",
 		Fields: graphql.Fields{
 			//Info implements info interface..
 			"info":{
-				Name: "info",
-				Type: payloadInfo,
-				Description: "Contains info related to model",
+				Type: payloadInfoType,
+				Description: "Contains information related to model",
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					if model, ok := p.Source.(*models.BaseModel); ok {
+						return model, nil
+					}
+					return nil, nil
+				},
+
 			},
 			//Payload implements payload interface..
 			"payload":{
-				Name: "payload",
 				Description: "Contains the model data of any type.",
 				Type: payloadInterface,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					if model, ok := p.Source.(*models.BaseModel); ok {
+						return model, nil
+					}
+					return nil, nil
+				},
 			},
+
 		},
 
 	})
 
-
-
-
-	/*CommonPropertyInterface = graphql.NewInterface(graphql.InterfaceConfig{
-		Name: "CommonProperty",
-		Description: "An object with an ID, Created, Updated, ETag",
-		Fields: graphql.Fields{
-			"id": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.ID),
-				Description: "Unique Id of model type.",
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.ID, nil
-					}
-					return nil, nil
-				},
-			},
-			"created": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.String),
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.Created, nil
-					}
-					return nil, nil
-				},
-			},
-			"updated": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.String),
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.Updated, nil
-					}
-					return nil, nil
-				},
-			},
-			"eTag": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.String),
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.ETag, nil
-					}
-					return nil, nil
-				},
-			},
-		},
-
-		//Implement Resolve type...return a simple grapql.Object as its has a mixed type of resolvers.
-		ResolveType: func(p graphql.ResolveTypeParams) (*graphql.Object){
-			if model, ok := p.Value.(*models.BaseModel); ok {
-				if model.Type == "author"{
-					return userType
-				}else{
-					return bookType
-				}
-			}
-			return nil
-		},
-	})*/
 
 
 	//Define a user type...
@@ -409,13 +373,12 @@ func init(){
 	})
 
 
-
 	//QueryType
 	queryType = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
-			"findById": &graphql.Field{
-				Type: baseModel,
+			/*"findById": &graphql.Field{
+				Type: baseModelType,
 				Description:"Find author of the book",
 				Args: graphql.FieldConfigArgument{
 					"id": &graphql.ArgumentConfig{
@@ -439,21 +402,21 @@ func init(){
 						return AuthorController.FindById(p.Context, p.Args["id"].(string), lookup)
 					}
 				},
-			},
+			},*/
 			"find": &graphql.Field{
-				Type: graphql.NewList(baseModel),
+				Type: graphql.NewList(baseModelType),
 				Description:"Find list of author of the book",
-				Args: graphql.FieldConfigArgument{
-					/*"collection": &graphql.ArgumentConfig{
+				/*Args: graphql.FieldConfigArgument{
+					*//*"collection": &graphql.ArgumentConfig{
 						Description: "Collection type",
 						Type: graphql.NewNonNull(graphql.String),
-					},*/
-					"offset": &graphql.ArgumentConfig{
+					},*//*
+					*//*"offset": &graphql.ArgumentConfig{
 						Description: "Offset",
 						Type: graphql.NewNonNull(graphql.String),
-					},
+					},*//*
 
-				},
+				},*/
 
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					var lookup *resource.Lookup = &resource.Lookup{}
@@ -474,7 +437,7 @@ func init(){
 				},
 			},
 
-			"getBook": &graphql.Field{
+			/*"getBook": &graphql.Field{
 				Type: bookType,
 				Description:"Returns book by id",
 				Args: graphql.FieldConfigArgument{
@@ -509,16 +472,16 @@ func init(){
 						return authorController.FindById(p.Context, p.Args["id"].(string), lookup)
 					}
 				},
-			},
+			},*/
 
 
 		},
 	})
-	
+
 
 	TestSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
 		Query: queryType,
-		Types: []graphql.Type{userType, bookType, baseModel},
+		Types: []graphql.Type{userType, bookType, baseModelType, payloadInfoType},
 
 	})
 }
