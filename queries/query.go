@@ -11,6 +11,7 @@ import (
 	"github.com/SnaphyLabs/SnaphyByte/controllers"
 	"github.com/SnaphyLabs/SnaphyByte/resource"
 	"github.com/SnaphyLabs/SnaphyByte/schema"
+	"fmt"
 )
 
 const (
@@ -282,6 +283,34 @@ func init(){
 						panic(err)
 					}else{
 						return AuthorController.FindById(p.Context, p.Args["id"].(string), lookup)
+					}
+				},
+			},
+			"find": &graphql.Field{
+				Type: graphql.NewList(CommonPropertyInterface),
+				Description:"Find list of author of the book",
+				Args: graphql.FieldConfigArgument{
+					/*"collection": &graphql.ArgumentConfig{
+						Description: "Collection type",
+						Type: graphql.NewNonNull(graphql.String),
+					},*/
+				},
+
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					var lookup *resource.Lookup = &resource.Lookup{}
+					var q *schema.Query = &schema.Query{}
+					q.AppendQuery(p.Args)
+					lookup.AddQuery(*q)
+					if AuthorController, err := controllers.NewCollection(AUTHOR_TYPE, mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
+						panic(err)
+					}else{
+						list, err := AuthorController.Find(p.Context, lookup, 0, 50)
+						if err != nil{
+							fmt.Println(err)
+							return nil, err
+						}else {
+							return list.Models, nil
+						}
 					}
 				},
 			},
