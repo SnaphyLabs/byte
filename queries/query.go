@@ -13,6 +13,7 @@ import (
 	"fmt"
 	//b64 "encoding/base64"
 	"github.com/SnaphyLabs/SnaphyByte/models"
+	"github.com/SnaphyLabs/SnaphyUtil"
 )
 
 const (
@@ -177,9 +178,9 @@ func init(){
 			"cursor": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					//TODO: Resolve this method..
+					//Encode cursor..
 					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.ETag, nil
+						return SnaphyUtil.Base64Encode(model.ETag), nil
 					}
 					return nil, nil
 				},
@@ -197,12 +198,11 @@ func init(){
 		Description: "Payload model could be of any type of collection",
 		Fields: graphql.Fields{
 			//Can accept fields of variable type..
-			"cursor": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.String),
+			"id": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.ID),
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					//TODO: Resolve this method..
 					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.ETag, nil
+						return model.ID, nil
 					}
 					return nil, nil
 				},
@@ -272,45 +272,63 @@ func init(){
 					return nil, nil
 				},
 			},
-			"eTag": &graphql.Field{
+			"firstName": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.ETag, nil
+						return model.Payload["firstName"], nil
 					}
 					return nil, nil
 				},
 			},
-			"created": &graphql.Field{
+			"lastName": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.Created, nil
+						return model.Payload["lastName"], nil
 					}
 					return nil, nil
 				},
 			},
-			"updated": &graphql.Field{
+			"email": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.Updated, nil
+						return model.Payload["email"], nil
 					}
 					return nil, nil
 				},
 			},
-			"payload": &graphql.Field{
+			"password": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					if model, ok := p.Source.(*models.BaseModel); ok {
+						return model.Payload["password"], nil
+					}
+					return nil, nil
+				},
+			},
+			"userName": &graphql.Field{
 				Type: graphql.String,
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.Payload, nil
+						return model.Payload["userName"], nil
+					}
+					return nil, nil
+				},
+			},
+			"age": &graphql.Field{
+				Type: graphql.String,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					if model, ok := p.Source.(*models.BaseModel); ok {
+						return model.Payload["age"], nil
 					}
 					return nil, nil
 				},
 			},
 		},
 		Interfaces: []*graphql.Interface{
-			//CommonPropertyInterface,
+			payloadInterface,
 		},
 	})
 
@@ -330,45 +348,46 @@ func init(){
 					return nil, nil
 				},
 			},
-			"eTag": &graphql.Field{
+			"name": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.ETag, nil
+						return model.Payload["name"], nil
 					}
 					return nil, nil
 				},
 			},
-			"created": &graphql.Field{
+			"pages": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.Created, nil
+						return model.Payload["pages"], nil
 					}
 					return nil, nil
 				},
 			},
-			"updated": &graphql.Field{
+			"price": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.Updated, nil
+						return model.Payload["price"], nil
 					}
 					return nil, nil
 				},
 			},
-			"payload": &graphql.Field{
+			"authorId": &graphql.Field{
 				Type: graphql.String,
+				Description: "Identity of author who has written this model",
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.Payload, nil
+						return model.Payload["authorId"], nil
 					}
 					return nil, nil
 				},
 			},
 		},
 		Interfaces: []*graphql.Interface{
-			//CommonPropertyInterface,
+			payloadInterface,
 		},
 	})
 
