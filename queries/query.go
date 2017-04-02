@@ -1,7 +1,6 @@
 package queries
 
 import (
-	"github.com/graphql-go/graphql"
 
 	"gopkg.in/mgo.v2"
 	"time"
@@ -14,6 +13,8 @@ import (
 	"github.com/SnaphyLabs/SnaphyByte/models"
 	"github.com/SnaphyLabs/SnaphyUtil"
 	"errors"
+	"github.com/graphql-go/graphql/gqlerrors"
+	"github.com/graphql-go/graphql"
 )
 
 const (
@@ -432,9 +433,168 @@ func init(){
 
 	TestSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
 		Query: queryType,
-		Types: []graphql.Type{UserType, BookType, baseModelType, payloadInfoType},
+		Types: []graphql.Type{BookType, baseModelType, payloadInfoType},
 
 	})
+
+
+	//Dynamically add user UserType
+	if err := appendType(&TestSchema, UserType); err != nil{
+		//Error occured..
+		fmt.Println(err)
+	}
+
+}
+
+//Append Type dynamically to the schema..
+func appendType(schema *graphql.Schema, objectType graphql.Type) error{
+	var err error
+	typeMap := graphql.TypeMap{}
+	if typeMap, err = TypeMapReducer(schema, typeMap, objectType); err != nil{
+		return err
+	}
+	return nil
+}
+
+
+func TypeMapReducer(schema *graphql.Schema, typeMap graphql.TypeMap, objectType graphql.Type) (graphql.TypeMap, error) {
+	var err error
+	if objectType == nil || objectType.Name() == "" {
+		return typeMap, nil
+	}
+
+	switch objectType := objectType.(type) {
+	case *graphql.List:
+		if objectType.OfType != nil {
+			return TypeMapReducer(schema, typeMap, objectType.OfType)
+		}
+	case *graphql.NonNull:
+		if objectType.OfType != nil {
+			return TypeMapReducer(schema, typeMap, objectType.OfType)
+		}
+	case *graphql.Object:
+		if objectType.Error() != nil {
+			return typeMap, objectType.Error()
+		}
+	}
+
+	if mappedObjectType, ok := typeMap[objectType.Name()]; ok {
+		err := invariant(
+			mappedObjectType == objectType,
+			fmt.Sprintf(`Schema must contain unique named types but contains multiple types named "%v".`, objectType.Name()),
+		)
+		if err != nil {
+			return typeMap, err
+		}
+		return typeMap, err
+	}
+	if objectType.Name() == "" {
+		return typeMap, nil
+	}
+
+	typeMap[objectType.Name()] = objectType
+
+	switch objectType := objectType.(type) {
+	case *graphql.Union:
+		types := schema.PossibleTypes(objectType)
+		if objectType.Error() != nil {
+			return typeMap, objectType.Error()
+		}
+		for _, innerObjectType := range types {
+			if innerObjectType.Error() != nil {
+				return typeMap, innerObjectType.Error()
+			}
+			typeMap, err = TypeMapReducer(schema, typeMap, innerObjectType)
+			if err != nil {
+				return typeMap, err
+			}
+		}
+	case *graphql.Interface:
+		types := schema.PossibleTypes(objectType)
+		if objectType.Error() != nil {
+			return typeMap, objectType.Error()
+		}
+		for _, innerObjectType := range types {
+			if innerObjectType.Error() != nil {
+				return typeMap, innerObjectType.Error()
+			}
+			typeMap, err = TypeMapReducer(schema, typeMap, innerObjectType)
+			if err != nil {
+				return typeMap, err
+			}
+		}
+	case *graphql.Object:
+		interfaces := objectType.Interfaces()
+		if objectType.Error() != nil {
+			return typeMap, objectType.Error()
+		}
+		for _, innerObjectType := range interfaces {
+			if innerObjectType.Error() != nil {
+				return typeMap, innerObjectType.Error()
+			}
+			typeMap, err = TypeMapReducer(schema, typeMap, innerObjectType)
+			if err != nil {
+				return typeMap, err
+			}
+		}
+	}
+
+	switch objectType := objectType.(type) {
+	case *graphql.Object:
+		fieldMap := objectType.Fields()
+		if objectType.Error() != nil {
+			return typeMap, objectType.Error()
+		}
+		for _, field := range fieldMap {
+			for _, arg := range field.Args {
+				typeMap, err = TypeMapReducer(schema, typeMap, arg.Type)
+				if err != nil {
+					return typeMap, err
+				}
+			}
+			typeMap, err = TypeMapReducer(schema, typeMap, field.Type)
+			if err != nil {
+				return typeMap, err
+			}
+		}
+	case *graphql.Interface:
+		fieldMap := objectType.Fields()
+		if objectType.Error() != nil {
+			return typeMap, objectType.Error()
+		}
+		for _, field := range fieldMap {
+			for _, arg := range field.Args {
+				typeMap, err = TypeMapReducer(schema, typeMap, arg.Type)
+				if err != nil {
+					return typeMap, err
+				}
+			}
+			typeMap, err = TypeMapReducer(schema, typeMap, field.Type)
+			if err != nil {
+				return typeMap, err
+			}
+		}
+	case *graphql.InputObject:
+		fieldMap := objectType.Fields()
+		if objectType.Error() != nil {
+			return typeMap, objectType.Error()
+		}
+		for _, field := range fieldMap {
+			typeMap, err = TypeMapReducer(schema, typeMap, field.Type)
+			if err != nil {
+				return typeMap, err
+			}
+		}
+	}
+	return typeMap, nil
+}
+
+
+func invariant(condition bool, message string) error {
+	if !condition {
+		return gqlerrors.NewFormattedError(message)
+	}
+	return nil
 }
 
 
