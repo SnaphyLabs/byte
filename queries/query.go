@@ -64,6 +64,7 @@ func init(){
 
 
 
+
 func init(){
 
 
@@ -338,7 +339,7 @@ func init(){
 					var q *schema.Query = &schema.Query{}
 					q.AppendQuery(p.Args)
 					lookup.AddQuery(*q)
-					if AuthorController, err := controllers.NewCollection(AUTHOR_TYPE, mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
+					if AuthorController, err := controllers.NewController(AUTHOR_TYPE, mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
 						panic(err)
 					}else{
 						return AuthorController.FindById(p.Context, p.Args["id"].(string), lookup)
@@ -382,7 +383,7 @@ func init(){
 
 					q.AppendQuery(p.Args)
 					lookup.AddQuery(*q)
-					if AuthorController, err := controllers.NewCollection(AUTHOR_TYPE, mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
+					if AuthorController, err := controllers.NewController(AUTHOR_TYPE, mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
 						panic(err)
 					}else{
 						list, err := AuthorController.Find(p.Context, lookup, 0, 50)
@@ -447,7 +448,7 @@ func init(){
 	if err := TestSchema.AppendType(UserType); err != nil{
 		panic(err)
 	}else{
-		fmt.Println(TestSchema)
+		//fmt.Println(TestSchema)
 	}
 
 }

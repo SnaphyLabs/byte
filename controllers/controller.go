@@ -61,7 +61,7 @@ type (
 
 
 //creates a new controller based on given collection and Storage..
-func NewCollection(collection string, storage database.Storage) (*Controller, error){
+func NewController(collection string, storage database.Storage) (*Controller, error){
 	collection = strings.TrimSpace(collection)
 	if collection != "" && storage != nil{
 		return &Controller{
