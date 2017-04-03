@@ -31,14 +31,14 @@ const (
 
 var (
 	//Defnigning graphql object type..
-	UserType *graphql.Object
-	BookType *graphql.Object
-	queryType *graphql.Object
+	UserType 	*graphql.Object
+	BookType 	*graphql.Object
+	queryType 	*graphql.Object
 	payloadInfoType *graphql.Object
-	baseModelType *graphql.Object
+	baseModelType 	*graphql.Object
 
-	mongoSession *mgo.Session
-	TestSchema graphql.Schema
+	mongoSession 	*mgo.Session
+	TestSchema 	graphql.Schema
 )
 
 
@@ -340,7 +340,7 @@ func init(){
 					var q *schema.Query = &schema.Query{}
 					q.AppendQuery(p.Args)
 					lookup.AddQuery(*q)
-					if AuthorController, err := controllers.NewController(AUTHOR_TYPE, mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
+					if AuthorController, err := controllers.NewController(mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
 						panic(err)
 					}else{
 						return AuthorController.FindById(p.Context, p.Args["id"].(string), lookup)
@@ -384,7 +384,7 @@ func init(){
 
 					q.AppendQuery(p.Args)
 					lookup.AddQuery(*q)
-					if AuthorController, err := controllers.NewController(AUTHOR_TYPE, mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
+					if AuthorController, err := controllers.NewController(mongoByte.NewHandler(mongoSession, AuthDatabase, Collection)); err != nil{
 						panic(err)
 					}else{
 						list, err := AuthorController.Find(p.Context, lookup, 0, 50)

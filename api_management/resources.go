@@ -9,8 +9,10 @@ import (
 	"github.com/SnaphyLabs/SnaphyByte/models"
 )
 
+
+
 type(
-	Resource struct {
+	Model struct {
 		name         string
 		description  string
 		fields       map[string]*Field
@@ -18,26 +20,118 @@ type(
 		interfaces   []interface{}
 		schema       *graphql.Object
 		validator    interface{}
-		resources    subResources
-		controller   *controllers.Controller
-		storage      database.Storage
+		relation     interface{} //It should be name of related model and model relation type..
 	}
 
-	subResources map[string]*Resource
 
 
-	ResourceConfig struct{
+	//All model defined in one model list..
+	ModelConfig struct {
+		models     	map[string]*Model
+		controller    	*controllers.Controller
+		storage       	database.Storage
+	}
+
+
+	//Used to create a model
+	RuleConfig struct{
 		Name 		string
 		Description 	string
 		Fields 		[]*Field
-		Storage      	database.Storage
 	}
 )
 
 
+//--------------------------------------------SUBRESOURCE METHOD--------------------------------------------------
+//Generate new ModelConfig
+func NewModelConfig(storage database.Storage) (*ModelConfig, error) {
+	mc := &ModelConfig{
+		storage: storage,
 
+	}
+
+	//Now add controller..
+	//TODO: Remove collection name from controller..if necessary
+	if ctrl, err := controllers.NewController(mc.storage); err != nil{
+		return nil, err
+	}else{
+		mc.controller = ctrl
+	}
+
+	return mc, nil
+}
+
+
+//Add a new Resources at runtime....
+func (sr *ModelConfig)add(rsrc *Model) error{
+	if r, ok := sr.models[rsrc.name]; r == nil || !ok{
+		sr.models[rsrc.name] = rsrc
+	}else{
+		return fmt.Errorf("Model %s already present.", rsrc.name)
+	}
+	return nil
+}
+
+
+
+// new creates a new model with provided spec, handler and config
+//Assosiates the newly created resource with the subresources..
+func (sr *ModelConfig)newModel(rc *RuleConfig) (error) {
+	r := &Model {
+		name: 		rc.Name,
+		description: 	rc.Description,
+	}
+
+	//Now create a new schema of type graphql.Object
+	schema := graphql.NewObject(graphql.ObjectConfig{
+		Name: rc.Name,
+		Description: rc.Description,
+		Fields: graphql.Fields{
+			//Blank fields to be added dynamically..
+		},
+	})
+
+	//Now add schema to Resource..
+	r.schema = schema
+
+
+
+	if rc.Fields == nil{
+		return  errors.New("Fields cannot be empty")
+	}else{
+		if len(rc.Fields) == 0{
+			return errors.New("Fields cannot be empty")
+		}
+	}
+
+	for _, f := range rc.Fields{
+		if err := r.addField(f, sr); err != nil{
+			return err
+		}
+	}
+
+
+	//TODO: Handle Relation handling..hasOne, belongsTo, hasMany, hasAndBelongsToMany, hasManyThrough
+
+
+
+	//TODO: add hooks..etc..
+	return nil
+}
+
+
+
+
+
+
+//-----------------------------------------------------END MODEL-CONFIG METHOD---------------------------------------------------------------------
+
+
+
+
+//---------------------------------------------------------MODEL METHOD-------------------------------------------------------------------
 //Add Field to a Resources at runtime..
-func (r *Resource)addField(field *Field, rs subResources) error {
+func (r *Model)addField(field *Field, mc *ModelConfig) error {
 	//TODO: Convert field name to lower case.
 	//TODO: Field name will always be case insensitive..
 	if r.fields == nil{
@@ -102,7 +196,7 @@ func (r *Resource)addField(field *Field, rs subResources) error {
 	case "Interface":
 		//Handle for Interface type.
 	default:
-		if customType, ok := rs[field.Type]; ok{
+		if customType, ok := mc.models[field.Type]; ok{
 			if field.Null == false{
 				gqlField.Type = graphql.NewNonNull(customType.schema)
 			}else{
@@ -138,85 +232,23 @@ func (r *Resource)addField(field *Field, rs subResources) error {
 
 
 
-//Add a new Resources at runtime....
-func (sr subResources)add(rsrc *Resource) error{
-	if r, ok := sr[rsrc.name]; r == nil || !ok{
-		sr[rsrc.name] = rsrc
-	}else{
-		return fmt.Errorf("Resource %s already present.", rsrc.name)
-	}
-	return nil
-}
-
-
-
-// new creates a new resource with provided spec, handler and config
-func newResource(rc ResourceConfig) (*Resource, error) {
-	r := &Resource {
-		name: 		rc.Name,
-		description: 	rc.Description,
-		storage: 	rc.Storage,
-	}
-
-	//Now create a new schema of type graphql.Object
-	schema := graphql.NewObject(graphql.ObjectConfig{
-		Name: rc.Name,
-		Description: rc.Description,
-		Fields: graphql.Fields{
-			//Blank fields to be added dynamically..
-		},
-	})
-
-	//Now add schema to Resource..
-	r.schema = schema
-
-
-	//Now add controller..
-	//TODO: Remove collection name from controller..if necessary
-	if ctrl, err := controllers.NewController(rc.Name, rc.Storage); err != nil{
-		return nil, err
-	}else{
-		r.controller = ctrl
-	}
-
-	if rc.Fields == nil{
-		return  nil, errors.New("Fields cannot be empty")
-	}else{
-		if len(rc.Fields) == 0{
-			return nil, errors.New("Fields cannot be empty")
-		}
-	}
-
-	for _, f := range rc.Fields{
-		if err := r.addField(f); err != nil{
-			return nil, err
-		}
-	}
-
-
-
-	//TODO: add hooks..etc..
-	return r, nil
-}
-
-
 
 //Load resources to memory
-func (r *Resource)load() error  {
+func (r *Model)load() error  {
 	//Load resources to memory
 	return nil
 }
 
 
 //Remove resources from memory
-func (r *Resource)remove() error  {
+func (r *Model)remove() error  {
 	//Load resources to memory
 	return nil
 }
 
 
 //Reload resources into memory with changes..applied
-func (r *Resource)reload() error  {
+func (r *Model)reload() error  {
 	//Load resources to memory
 	return nil
 }

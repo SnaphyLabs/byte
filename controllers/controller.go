@@ -7,7 +7,6 @@ import (
 	"golang.org/x/net/context"
 	"github.com/SnaphyLabs/SnaphyByte/resource"
 	"github.com/SnaphyLabs/SnaphyByte/collections"
-	"strings"
 	"fmt"
 )
 
@@ -61,16 +60,21 @@ type (
 
 
 //creates a new controller based on given collection and Storage..
-func NewController(collection string, storage database.Storage) (*Controller, error){
-	collection = strings.TrimSpace(collection)
+func NewController(/*collection string, */storage database.Storage) (*Controller, error){
+	/*collection = strings.TrimSpace(collection)
 	if collection != "" && storage != nil{
 		return &Controller{
-			collection_type: strings.ToLower(collection),
+			//collection_type: strings.ToLower(collection),
 			storage: storage,
 		}, nil
 	}else{
 		return nil, errors.New("Collection type and storage is required for a controller init")
-	}
+	}*/
+
+	return &Controller{
+		//collection_type: strings.ToLower(collection),
+		storage: storage,
+	}, nil
 }
 
 
