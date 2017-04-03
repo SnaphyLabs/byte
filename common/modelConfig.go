@@ -1,4 +1,4 @@
-package api_management
+package common
 
 import (
 	"github.com/graphql-go/graphql"
@@ -17,10 +17,11 @@ type(
 		description  string
 		fields       map[string]*Field
 		hooks        interface{} //TODO: Later implementation..
-		interfaces   []interface{}
-		schema       *graphql.Object
+		//interfaces   []interface{}
+		graphql       *graphql.Object
 		validator    interface{}
 		relation     interface{} //It should be name of related model and model relation type..
+		interfaces   []*graphql.Interface
 	}
 
 
@@ -38,6 +39,7 @@ type(
 		Name 		string
 		Description 	string
 		Fields 		[]*Field
+		Interfaces      []*graphql.Interface
 	}
 )
 
@@ -57,15 +59,19 @@ func NewModelConfig(storage database.Storage) (*ModelConfig, error) {
 	}else{
 		mc.controller = ctrl
 	}
-
 	return mc, nil
 }
 
 
+
 //Add a new Resources at runtime....
-func (sr *ModelConfig)add(rsrc *Model) error{
-	if r, ok := sr.models[rsrc.name]; r == nil || !ok{
-		sr.models[rsrc.name] = rsrc
+func (mc *ModelConfig)add(rsrc *Model) error{
+	if mc.models == nil{
+		mc.models = make(map[string]*Model)
+	}
+
+	if r, ok := mc.models[rsrc.name]; r == nil || !ok{
+		mc.models[rsrc.name] = rsrc
 	}else{
 		return fmt.Errorf("Model %s already present.", rsrc.name)
 	}
@@ -73,13 +79,19 @@ func (sr *ModelConfig)add(rsrc *Model) error{
 }
 
 
+func (mc *ModelConfig)Models() map[string]*Model{
+	return mc.models
+}
+
+
 
 // new creates a new model with provided spec, handler and config
 //Assosiates the newly created resource with the subresources..
-func (sr *ModelConfig)newModel(rc *RuleConfig) (error) {
-	r := &Model {
+func (sr *ModelConfig)NewModel(rc *RuleConfig) (error) {
+	m := &Model {
 		name: 		rc.Name,
 		description: 	rc.Description,
+		interfaces:     rc.Interfaces,
 	}
 
 	//Now create a new schema of type graphql.Object
@@ -89,11 +101,13 @@ func (sr *ModelConfig)newModel(rc *RuleConfig) (error) {
 		Fields: graphql.Fields{
 			//Blank fields to be added dynamically..
 		},
+		Interfaces: m.interfaces,
 	})
 
-	//Now add schema to Resource..
-	r.schema = schema
 
+	//Now add schema to Resource..
+	m.graphql = schema
+	//TODo: Remove..
 
 
 	if rc.Fields == nil{
@@ -105,7 +119,7 @@ func (sr *ModelConfig)newModel(rc *RuleConfig) (error) {
 	}
 
 	for _, f := range rc.Fields{
-		if err := r.addField(f, sr); err != nil{
+		if err := m.addField(f, sr); err != nil{
 			return err
 		}
 	}
@@ -116,7 +130,10 @@ func (sr *ModelConfig)newModel(rc *RuleConfig) (error) {
 
 
 	//TODO: add hooks..etc..
-	return nil
+
+	//Now add model config to model..
+	return sr.add(m)
+	//return nil
 }
 
 
@@ -132,6 +149,7 @@ func (sr *ModelConfig)newModel(rc *RuleConfig) (error) {
 //---------------------------------------------------------MODEL METHOD-------------------------------------------------------------------
 //Add Field to a Resources at runtime..
 func (r *Model)addField(field *Field, mc *ModelConfig) error {
+	///TODO: add Validation of field..
 	//TODO: Convert field name to lower case.
 	//TODO: Field name will always be case insensitive..
 	if r.fields == nil{
@@ -142,7 +160,7 @@ func (r *Model)addField(field *Field, mc *ModelConfig) error {
 		return errors.New("Field name cannot be empty")
 	}
 
-	if r.schema == nil{
+	if r.graphql == nil{
 		return errors.New("Resource's Schema is required to add field.")
 	}
 
@@ -156,35 +174,41 @@ func (r *Model)addField(field *Field, mc *ModelConfig) error {
 	gqlField := &graphql.Field{
 		Name: field.Name,
 		Description: field.Description,
+		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+			if model, ok := p.Source.(*models.BaseModel); ok {
+				return model.Payload[field.Name], nil
+			}
+			return nil, nil
+		},
 	}
 
 	switch field.Type {
 	case "ID":
-		if field.Null == false{
+		if field.AllowNull == false{
 			gqlField.Type = graphql.NewNonNull(graphql.ID)
 		}else{
 			gqlField.Type = graphql.ID
 		}
 	case "Int":
-		if field.Null == false{
+		if field.AllowNull == false{
 			gqlField.Type = graphql.NewNonNull(graphql.Int)
 		}else{
 			gqlField.Type = graphql.Int
 		}
 	case "Float":
-		if field.Null == false{
+		if field.AllowNull == false{
 			gqlField.Type = graphql.NewNonNull(graphql.Float)
 		}else{
 			gqlField.Type = graphql.Float
 		}
 	case "String":
-		if field.Null == false{
+		if field.AllowNull == false{
 			gqlField.Type = graphql.NewNonNull(graphql.String)
 		}else{
 			gqlField.Type = graphql.String
 		}
 	case "Boolean":
-		if field.Null == false{
+		if field.AllowNull == false{
 			gqlField.Type = graphql.NewNonNull(graphql.Boolean)
 		}else{
 			gqlField.Type = graphql.Boolean
@@ -197,10 +221,10 @@ func (r *Model)addField(field *Field, mc *ModelConfig) error {
 		//Handle for Interface type.
 	default:
 		if customType, ok := mc.models[field.Type]; ok{
-			if field.Null == false{
-				gqlField.Type = graphql.NewNonNull(customType.schema)
+			if field.AllowNull == false{
+				gqlField.Type = graphql.NewNonNull(customType.graphql)
 			}else{
-				gqlField.Type = customType.schema
+				gqlField.Type = customType.graphql
 			}
 		}else{
 			return fmt.Errorf("Unknown type %s in field definition", field.Type)
@@ -208,12 +232,6 @@ func (r *Model)addField(field *Field, mc *ModelConfig) error {
 	}
 
 
-	gqlField.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
-		if model, ok := p.Source.(*models.BaseModel); ok {
-			return model.Payload[field.Name], nil
-		}
-		return nil, nil
-	}
 
 	//TODO: Future handling for
 	/**
@@ -226,11 +244,15 @@ func (r *Model)addField(field *Field, mc *ModelConfig) error {
 	Resolve interface{}
 	Args interface{}
 	 */
+
+	r.graphql.AddFieldConfig(field.Name, gqlField)
 	return nil
 }
 
-
-
+//Returned the graphql object..
+func (m *Model)GraphQLObject() *graphql.Object  {
+	return m.graphql
+}
 
 
 //Load resources to memory

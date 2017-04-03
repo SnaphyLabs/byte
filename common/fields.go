@@ -1,4 +1,4 @@
-package api_management
+package common
 
 
 type(
@@ -6,7 +6,7 @@ type(
 		Name string
 		Description string
 		Type string
-		Null bool
+		AllowNull bool
 		Validation interface{} //TODO://handled for later user..
 		ReadOnly bool
 		Default interface{}

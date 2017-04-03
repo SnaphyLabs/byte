@@ -83,7 +83,13 @@ var (
 			//Resolve type of interface here..
 			if model, ok := p.Value.(*models.BaseModel); ok {
 				if model.Type == "author"{
-					return UserType
+					if ModelConfig != nil{
+						if ModelConfig.Models() != nil{
+							if model, ok := ModelConfig.Models()["User"]; ok{
+								return model.GraphQLObject()
+							}
+						}
+					}
 				}else{
 					return BookType
 				}
