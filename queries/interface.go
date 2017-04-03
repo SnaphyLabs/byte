@@ -91,7 +91,13 @@ var (
 						}
 					}
 				}else{
-					return BookType
+					if ModelConfig != nil{
+						if ModelConfig.Models() != nil{
+							if model, ok := ModelConfig.Models()["Book"]; ok{
+								return model.GraphQLObject()
+							}
+						}
+					}
 				}
 			}
 			return nil

@@ -42,7 +42,7 @@ var (
 	TestSchema 	graphql.Schema
 )
 
-  
+
 func init(){
 
 	// We need this object to establish a session to our MongoDB.
@@ -235,92 +235,54 @@ func init(){
 		},
 	})
 
-	//Define a user type...
-	/*UserType = graphql.NewObject(graphql.ObjectConfig{
-		Name: "User",
-		//No need as this method is already defined in interface.
-		*//*IsTypeOf: func(p graphql.IsTypeOfParams) bool {
-			model, ok := p.Value.(*models.BaseModel)
-			if model.Type == "author"{
-				return true
-			}
-			return false
-		},*//*
-		Fields: graphql.Fields{
-			"id": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.ID),
-				Description: "Unique Id of user type.",
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.ID, nil
-					}
-					return nil, nil
-				},
-			},
-			"firstName": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.String),
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.Payload["firstName"], nil
-					}
-					return nil, nil
-				},
-			},
-			"lastName": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.String),
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.Payload["lastName"], nil
-					}
-					return nil, nil
-				},
-			},
-			"email": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.String),
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.Payload["email"], nil
-					}
-					return nil, nil
-				},
-			},
-			"password": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.String),
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.Payload["password"], nil
-					}
-					return nil, nil
-				},
-			},
-			"userName": &graphql.Field{
-				Type: graphql.String,
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.Payload["userName"], nil
-					}
-					return nil, nil
-				},
-			},
-			"age": &graphql.Field{
-				Type: graphql.String,
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if model, ok := p.Source.(*models.BaseModel); ok {
-						return model.Payload["age"], nil
-					}
-					return nil, nil
-				},
-			},
+
+	bookFields := []*common.Field{
+		{
+			Name: "id",
+			Description:"Unique identity of book type.",
+			AllowNull: false,
+			Type: "ID",
 		},
+		{
+			Name: "name",
+			Description:"Book name.",
+			AllowNull: false,
+			Type: "String",
+		},
+		{
+			Name: "pages",
+			Description:"Pages of the book.",
+			AllowNull: false,
+			Type: "String",
+		},
+		{
+			Name: "price",
+			Description:"Cost of book",
+			AllowNull: false,
+			Type: "String",
+		},
+		{
+			Name: "authorId",
+			Description:"Author Id related model",
+			AllowNull: false,
+			Type: "String",
+		},
+	}
+
+	//fmt.Println(mc, userFields)
+
+	ModelConfig.NewModel(&common.RuleConfig{
+		Name: "Book",
+		Description: "User model runtime",
+		Fields: bookFields,
 		Interfaces: []*graphql.Interface{
 			PayloadInterface,
 		},
 	})
-*/
 
 
 
-	//Define a user type...
+	/*//Define a user type...
 	BookType = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Book",
 		Fields: graphql.Fields{
@@ -375,7 +337,7 @@ func init(){
 		Interfaces: []*graphql.Interface{
 			PayloadInterface,
 		},
-	})
+	})*/
 
 
 	//QueryType
@@ -501,7 +463,7 @@ func init(){
 
 	TestSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
 		Query: queryType,
-		Types: []graphql.Type{BookType, baseModelType, payloadInfoType},
+		Types: []graphql.Type{baseModelType, payloadInfoType},
 
 	})
 
@@ -516,7 +478,7 @@ func init(){
 		TestSchema.AppendType(value.GraphQLObject())
 	}
 
-	fmt.Println(TestSchema)
+	//fmt.Println(TestSchema)
 	/*
 
 	if err := TestSchema.AppendType(UserType); err != nil{
