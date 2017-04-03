@@ -258,6 +258,7 @@ func init(){
 
 
 
+
 	//Define a user type...
 	BookType = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Book",
