@@ -13,15 +13,15 @@ import (
 
 type(
 	Model struct {
-		name         string
-		description  string
-		fields       map[string]*Field
-		hooks        interface{} //TODO: Later implementation..
-		//interfaces   []interface{}
+		name          string
+		description   string
+		fields        map[string]*Field
+		hooks         interface{} //TODO: Later implementation..
+		//interfaces  []interface{}
 		graphql       *graphql.Object
-		validator    interface{}
-		relation     interface{} //It should be name of related model and model relation type..
-		interfaces   []*graphql.Interface
+		validator     interface{}
+		relation      interface{} //It should be name of related model and model relation type..
+		interfaces    []*graphql.Interface
 	}
 
 
@@ -31,6 +31,7 @@ type(
 		models     	map[string]*Model
 		controller    	*controllers.Controller
 		storage       	database.Storage
+		interfaces      []*graphql.Interface
 	}
 
 
@@ -93,6 +94,9 @@ func (sr *ModelConfig)NewModel(rc *RuleConfig) (error) {
 		description: 	rc.Description,
 		interfaces:     rc.Interfaces,
 	}
+
+
+
 
 	//Now create a new schema of type graphql.Object
 	schema := graphql.NewObject(graphql.ObjectConfig{
